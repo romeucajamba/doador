@@ -1,233 +1,78 @@
-# 🔥 GasMarket - Marketplace de Gás
+# 🩸 Blood Hub - Plataforma de Gestão de Doação de Sangue
 
-Um Super admin moderno e completo para venda de gás, desenvolvido com as melhores tecnologias do ecossistema React.
-
-## 🚀 Tecnologias Utilizadas
-
-- **React 18** - Biblioteca para construção de interfaces
-- **TypeScript** - Superset JavaScript com tipagem estática
-- **Vite** - Build tool ultrarrápido
-- **React Router DOM** - Roteamento de páginas
-- **TanStack React Query** - Gerenciamento de estado servidor
-- **Zustand** - Gerenciamento de estado global
-- **Axios** - Cliente HTTP para requisições
-- **React Hook Form** - Gerenciamento de formulários
-- **Zod** - Validação de schemas
-- **Tailwind CSS** - Framework CSS utility-first
-- **shadcn/ui** - Componentes UI modernos e acessíveis
-
-## ✨ Funcionalidades Implementadas
-
-### 🔐 Autenticação
-
-### 👤 Perfil do Usuário
-
-### 🛒 Dashbord
-
-### 📦 Gestão de Vendedores
-
-## 📁 Estrutura do Projeto
-
-```
-super-admin/
-├── src/
-│   ├── components/
-│   │   ├── ui/              # Componentes shadcn/ui
-│   │   │   ├── button.tsx
-│   │   │   ├── card.tsx
-│   │   │   ├── input.tsx
-│   │   │   ├── label.tsx
-│   │   │   ├── toast.tsx
-│   │   │   └── ...
-│   │   └── layout/          # Componentes de layout
-│   │       └── Header.tsx
-│   ├── app/               # Páginas da aplicação
-│   │   ├── public
-│   │   ├── perfil
-│   │   ├── dashboard
-│   │   ├── pedidos
-│   │   ├── produtos
-│   │   ├── configuracoes
-│   │   └── ...
-│   ├── store/               # Stores Zustand
-│   │   ├── authStore.ts
-│   │   └── cartStore.ts
-│   ├── lib/                 # Utilitários e configurações
-│   │   ├── query.ts
-│   │   ├── utils.ts
-│   │   └── validations.ts
-│   ├── types/               # Tipos TypeScript
-│   │   └── index.ts
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css
-├── public/
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-├── tailwind.config.js
-└── README.md
-```
-
-## 🎨 Conceitos de Componentização
-
-O projeto segue as melhores práticas de componentização do React:
-
-### 1. **Componentes Reutilizáveis**
-
-- Todos os componentes UI são isolados e reutilizáveis
-- Uso do shadcn/ui para componentes base consistentes
-
-### 2. **Separação de Responsabilidades**
-
-- Componentes de UI em `components/ui/`
-- Componentes de layout em `components/layout/`
-- Páginas em `pages/`
-
-### 3. **Composição**
-
-- Componentes pequenos e focados
-- Composição de componentes complexos a partir de componentes simples
-
-### 4. **Props Tipadas**
-
-- Uso extensivo de TypeScript para tipar props
-- Interfaces bem definidas
-
-### 5. ** Validações**
-
-- Uso extensivo de Zod para tipar e validar formulários
-- Interfaces bem definidas
-
-### 6. **Custom Hooks**
-
-- `useToast` para notificações
-- Stores Zustand para estado global
-
-## 🔧 Como Executar o Projeto
-
-### Pré-requisitos
-
-- Node.js 18+
-- npm ou yarn
-
-### Instalação
-
-1. Clone o repositório ou extraia o arquivo
-
-2. Instale as dependências:
-
-```bash
-npm install
-```
-
-3. Configure as variáveis de ambiente (opcional):
-
-```bash
-# Crie um arquivo .env na raiz do projeto
-VITE_API_URL=http://localhost:3000/api
-```
-
-4. Execute o projeto em modo desenvolvimento:
-
-```bash
-npm run dev
-```
-
-5. Acesse no navegador:
-
-```
-http://localhost:8080
-```
-
-### Build para Produção
-
-```bash
-npm run build
-```
-
-O build será gerado na pasta `dist/`
-
-## 🌐 API Backend
-
-Este projeto está preparado para consumir uma API REST. Configure a URL base da API no arquivo `.env`:
-
-```
-VITE_API_URL=https://sua-api.com/api
-```
-
-### Endpoints Esperados
-
-```
-POST   /auth/register       - Cadastro de usuário
-POST   /auth/login          - Login
-POST   /auth/reset-password - Recuperação de senha
-POST   /auth/activate       - Ativação de conta
-
-GET    /products            - Lista de produtos
-GET    /products/:id        - Detalhes do produto
-
-GET    /addresses           - Lista de endereços do usuário
-POST   /addresses           - Criar endereço
-PUT    /addresses/:id       - Atualizar endereço
-DELETE /addresses/:id       - Deletar endereço
-
-GET    /orders              - Lista de pedidos do usuário
-POST   /orders              - Criar pedido
-GET    /orders/:id          - Detalhes do pedido
-
-POST   /reviews             - Criar avaliação
-```
-
-## 🎯 Funcionalidades Futuras
-
-- [ ]
-
-## 🛠️ Customização
-
-### Cores do Tema
-
-Edite o arquivo `tailwind.config.js` e `src/index.css` para customizar as cores:
-
-```css
-:root {
-  --primary: 221.2 83.2% 53.3%;
-  --secondary: 210 40% 96.1%;
-  /* ... outras cores */
-}
-```
-
-### Componentes UI
-
-Todos os componentes shadcn/ui podem ser customizados em `src/components/ui/`
-
-## 📝 Scripts Disponíveis
-
-```bash
-npm run dev      # Inicia servidor de desenvolvimento
-npm run build    # Build para produção
-npm run preview  # Preview do build
-npm run lint     # Executa o linter
-```
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para:
-
-1. Fazer fork do projeto
-2. Criar uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Abrir um Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT.
-
-## 👨‍💻 Desenvolvedor
-
-nome:Romeu Cajamba
-e-mail:romeucajamba@gmail.com
-github:[text](https://github.com/romeucajamba)
+Este projeto é uma plataforma moderna e responsiva para a gestão de doações de sangue, desenvolvida como proposta para o final do curso de Engenharia Informática. O sistema unifica o ecossistema de doação, conectando **Doadores** e **Hospitais** em um único ambiente digital.
 
 ---
+
+## 🛠️ Stack Tecnológica
+
+O projeto foi transformado de um protótipo HTML/CSS simples para uma aplicação **Enterprise-Ready** utilizando:
+
+- **React 18 & TypeScript:** Base sólida e tipagem estática para evitar erros em produção.
+- **Zustand:** Gerenciamento de estado global ultra-rápido para Autenticação e Inventário.
+- **Zod & React Hook Form:** Validação rigorosa de formulários e integridade de dados.
+- **TanStack Query (React Query):** Sincronização de dados e cache inteligente.
+- **Shadcn UI & Tailwind CSS:** Interface premium, seguindo padrões modernos de design e acessibilidade.
+- **Lucide React & React Icons:** Biblioteca de ícones consistente.
+
+---
+
+## 🏗️ Arquitetura do Projeto
+
+A aplicação segue uma arquitetura baseada em **Separação de Responsabilidades** e **Componentização**:
+
+- **`/src/components`**: Componentes reutilizáveis (UI) e Layouts de área.
+- **`/src/pages`**: View Components que representam cada tela do sistema.
+- **`/src/stores`**: Lógica de estado persistente (Single Source of Truth).
+- **`/src/lib`**: Schemas de validação, utilitários e definições de tipos.
+- **`/src/auth`**: Guardas de rota para proteção de acesso baseado em papel (Role-based access).
+
+---
+
+## 🔄 Fluxo de Navegação e Funcionalidades
+
+### 👥 Área do Doador (Mobile-First)
+Focada na experiência do voluntário, com layout otimizado para dispositivos móveis.
+
+1.  **Onboarding (Login/Registro):** Criação de perfil com tipo sanguíneo e credenciais seguras.
+2.  **Dashboard:** Visualização do status de elegibilidade para doação, estatísticas de impacto ("Vidas Salvas") e ranking de doador.
+3.  **Hospitals & Centers:** Busca interativa de centros de coleta próximos com filtros de urgência e distância.
+4.  **Appointments:** Histórico completo de doações passadas e gestão de agendamentos futuros.
+5.  **Profile:** Gestão de dados pessoais e configurações de conta.
+
+### 🏥 Área do Hospital (Desktop-Optimized)
+Painel administrativo robusto para gestão técnica do banco de sangue.
+
+1.  **Admin Dashboard:** Visão geral da telemetria do banco de sangue (Total de unidades, necessidades urgentes).
+2.  **Blood Stock:** Controle granular do inventário para todos os tipos sanguíneos (A+, O-, etc.) com alertas visuais de estoque crítico.
+3.  **Donor Network:** Acesso à base de dados de doadores cadastrados, facilitando a convocação em casos de emergência.
+4.  **Blood Requests:** Sistema para criação de requisições emergenciais de sangue entre centros.
+5.  **AI Suggestions:** Sugestões inteligentes (mockeadas) para otimização de estoque baseadas na demanda.
+
+---
+
+## 🎨 Diferenciais da Interface (Premium UI)
+
+- **Modo Escuro (Dark Mode):** Alternância inteligente de tema em toda a aplicação.
+- **Glassmorphism:** Uso de efeitos de transparência e desfoque de fundo para um visual sofisticado.
+- **Micro-animações:** Transições suaves entre páginas e estados para melhorar a UX (User Experience).
+- **Responsividade Total:** Adaptação fluida desde smartphones até monitores ultra-wide.
+
+---
+
+## 🚀 Como Executar
+
+1. Instale as dependências:
+   ```bash
+   npm install
+   ```
+2. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+3. O projeto estará disponível na URL indicada no terminal.
+
+---
+
+**Desenvolvido como projeto final de Engenharia Informática.**
+"Doar sangue é um ato de amor, gerir com eficiência é um dever técnico."
