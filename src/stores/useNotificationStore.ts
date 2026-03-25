@@ -13,7 +13,9 @@ export interface Notification {
 
 interface NotificationState {
   notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id' | 'read' | 'time'>) => void;
+  addNotification: (
+    notification: Omit<Notification, 'id' | 'read' | 'time'>
+  ) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearNotifications: () => void;
@@ -34,7 +36,8 @@ export const useNotificationStore = create<NotificationState>()(
         {
           id: '1',
           title: 'Donation Successful',
-          message: 'Thank you for your donation at Hospital Josina Machel! You saved 3 lives.',
+          message:
+            'Thank you for your donation at Hospital Josina Machel! You saved 3 lives.',
           time: '2 hours ago',
           read: false,
           type: 'success',
@@ -42,7 +45,8 @@ export const useNotificationStore = create<NotificationState>()(
         {
           id: '2',
           title: 'Emergency: O+ Needed',
-          message: 'Urgent need for O+ blood at Clinica Girassol. Can you help?',
+          message:
+            'Urgent need for O+ blood at Clinica Girassol. Can you help?',
           time: '5 hours ago',
           read: false,
           type: 'warning',
@@ -50,31 +54,35 @@ export const useNotificationStore = create<NotificationState>()(
         {
           id: '3',
           title: 'New Center Available',
-          message: 'Centro de Hemoterapia de Luanda is now accepting appointments.',
+          message:
+            'Centro de Hemoterapia de Luanda is now accepting appointments.',
           time: 'Yesterday',
           read: true,
           type: 'info',
         },
       ],
-      addNotification: (n) => set((state) => ({
-        notifications: [
-          {
-            ...n,
-            id: Math.random().toString(36).substring(7),
-            read: false,
-            time: 'Just now',
-          },
-          ...state.notifications,
-        ],
-      })),
-      markAsRead: (id) => set((state) => ({
-        notifications: state.notifications.map((n) => 
-          n.id === id ? { ...n, read: true } : n
-        ),
-      })),
-      markAllAsRead: () => set((state) => ({
-        notifications: state.notifications.map((n) => ({ ...n, read: true })),
-      })),
+      addNotification: (n) =>
+        set((state) => ({
+          notifications: [
+            {
+              ...n,
+              id: Math.random().toString(36).substring(7),
+              read: false,
+              time: 'Just now',
+            },
+            ...state.notifications,
+          ],
+        })),
+      markAsRead: (id) =>
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.id === id ? { ...n, read: true } : n
+          ),
+        })),
+      markAllAsRead: () =>
+        set((state) => ({
+          notifications: state.notifications.map((n) => ({ ...n, read: true })),
+        })),
       clearNotifications: () => set({ notifications: [] }),
     }),
     {

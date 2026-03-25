@@ -7,7 +7,10 @@ interface ProtectedRouteProps {
   allowedRole?: 'donor' | 'hospital';
 }
 
-export const ProtectedRoute = ({ children, allowedRole }: ProtectedRouteProps) => {
+export const ProtectedRoute = ({
+  children,
+  allowedRole,
+}: ProtectedRouteProps) => {
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,7 +20,9 @@ export const ProtectedRoute = ({ children, allowedRole }: ProtectedRouteProps) =
       navigate('/login', { state: { from: location } });
     } else if (allowedRole && user?.role !== allowedRole) {
       // Redirect to their own dashboard if they try to access the wrong area
-      navigate(user?.role === 'donor' ? '/donor/dashboard' : '/hospital/dashboard');
+      navigate(
+        user?.role === 'donor' ? '/donor/dashboard' : '/hospital/dashboard'
+      );
     }
   }, [isAuthenticated, user, allowedRole, navigate, location]);
 

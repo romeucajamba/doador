@@ -32,6 +32,7 @@ A aplicação segue uma arquitetura baseada em **Separação de Responsabilidade
 ## 🔄 Fluxo de Navegação e Funcionalidades
 
 ### 👥 Área do Doador (Mobile-First)
+
 Focada na experiência do voluntário, com layout otimizado para dispositivos móveis.
 
 1.  **Onboarding (Login/Registro):** Criação de perfil com tipo sanguíneo e credenciais seguras.
@@ -41,6 +42,7 @@ Focada na experiência do voluntário, com layout otimizado para dispositivos m�
 5.  **Profile:** Gestão de dados pessoais e configurações de conta.
 
 ### 🏥 Área do Hospital (Desktop-Optimized)
+
 Painel administrativo robusto para gestão técnica do banco de sangue.
 
 1.  **Admin Dashboard:** Visão geral da telemetria do banco de sangue (Total de unidades, necessidades urgentes).

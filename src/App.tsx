@@ -24,13 +24,16 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
+
           {/* Donor Routes */}
-          <Route path="/donor" element={
-            <ProtectedRoute allowedRole="donor">
-              <DonorLayout />
-            </ProtectedRoute>
-          }>
+          <Route
+            path="/donor"
+            element={
+              <ProtectedRoute allowedRole="donor">
+                <DonorLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<DonorDashboard />} />
             <Route path="centers" element={<HospitalList />} />
@@ -39,11 +42,14 @@ function App() {
           </Route>
 
           {/* Hospital Routes */}
-          <Route path="/hospital" element={
-            <ProtectedRoute allowedRole="hospital">
-              <HospitalLayout />
-            </ProtectedRoute>
-          }>
+          <Route
+            path="/hospital"
+            element={
+              <ProtectedRoute allowedRole="hospital">
+                <HospitalLayout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<HospitalDashboard />} />
             <Route path="stock" element={<StockManagement />} />
@@ -56,7 +62,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
-  )
+  );
 }
 
 const ComingSoon = ({ title }: { title: string }) => (
@@ -64,9 +70,13 @@ const ComingSoon = ({ title }: { title: string }) => (
     <div className="size-20 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6">
       <span className="text-4xl">🏗️</span>
     </div>
-    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">{title}</h2>
-    <p className="text-slate-500 font-medium max-w-xs">This section is currently under construction and will be available soon.</p>
+    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+      {title}
+    </h2>
+    <p className="text-slate-500 font-medium max-w-xs">
+      This section is currently under construction and will be available soon.
+    </p>
   </div>
 );
 
-export default App
+export default App;
