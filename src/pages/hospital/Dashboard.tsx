@@ -158,14 +158,6 @@ export const HospitalDashboard: React.FC = () => {
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <Button
-            variant="outline"
-            onClick={handleExport}
-            className="h-9 px-4 rounded-xl font-semibold text-sm border-slate-200 dark:border-slate-700 gap-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
-          >
-            <MdFileDownload className="text-base" />
-            <span className="hidden sm:inline">Exportar</span>
-          </Button>
-          <Button
             onClick={handleEmergencyRequest}
             disabled={isRequesting}
             className="h-9 px-4 rounded-xl font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-600/30 transition-all gap-1.5"

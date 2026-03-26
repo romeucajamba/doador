@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   MdDashboard,
   MdInventory,
@@ -21,6 +21,7 @@ interface HospitalLayoutProps {
 export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
   const { user, logout } = useAuthStore();
   const hospital = user as Hospital;
+  const navigate = useNavigate();
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 font-sans">
@@ -55,11 +56,6 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
             to="/hospital/messages"
             icon={<MdChat />}
             label="Messages"
-          />
-          <SideNavItem
-            to="/hospital/settings"
-            icon={<MdSettings />}
-            label="Settings"
           />
         </nav>
 
@@ -96,9 +92,12 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
               <MdNotifications className="text-2xl text-slate-600 dark:text-slate-300" />
               <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
             </button>
-            <div className="size-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300">
+            <button
+              onClick={() => navigate('/perfil-hospital')}
+              className="size-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300"
+            >
               {hospital?.name?.charAt(0) || 'H'}
-            </div>
+            </button>
           </div>
         </header>
 
@@ -121,11 +120,6 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
               to="/hospital/donors"
               icon={<MdGroupAdd />}
               label="Donors"
-            />
-            <MobileNavItem
-              to="/hospital/messages"
-              icon={<MdChat />}
-              label="Chat"
             />
           </div>
         </nav>

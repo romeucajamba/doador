@@ -13,6 +13,8 @@ import { StockManagement } from './pages/hospital/StockManagement';
 import { DonorManagement } from './pages/hospital/DonorManagement';
 import { Profile } from './pages/donor/Profile';
 import { useState } from 'react';
+import { HospitalProfile } from '@/pages/hospital/DonorProfile';
+import { HospitalMessenger } from '@/pages/hospital/Message';
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -54,7 +56,8 @@ function App() {
             <Route path="dashboard" element={<HospitalDashboard />} />
             <Route path="stock" element={<StockManagement />} />
             <Route path="donors" element={<DonorManagement />} />
-            <Route path="messages" element={<ComingSoon title="Messages" />} />
+            <Route path="messages" element={<HospitalMessenger />} />
+            <Route path="perfil-hospital" element={<HospitalProfile />} />
           </Route>
 
           {/* Root Redirect */}
@@ -64,19 +67,5 @@ function App() {
     </QueryClientProvider>
   );
 }
-
-const ComingSoon = ({ title }: { title: string }) => (
-  <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
-    <div className="size-20 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-6">
-      <span className="text-4xl">🏗️</span>
-    </div>
-    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
-      {title}
-    </h2>
-    <p className="text-slate-500 font-medium max-w-xs">
-      This section is currently under construction and will be available soon.
-    </p>
-  </div>
-);
 
 export default App;
