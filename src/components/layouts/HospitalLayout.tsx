@@ -93,7 +93,7 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
               <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
             </button>
             <button
-              onClick={() => navigate('/perfil-hospital')}
+              onClick={() => navigate('/perfil')}
               className="size-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300"
             >
               {hospital?.name?.charAt(0) || 'H'}

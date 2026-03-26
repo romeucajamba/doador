@@ -57,7 +57,7 @@ function App() {
             <Route path="stock" element={<StockManagement />} />
             <Route path="donors" element={<DonorManagement />} />
             <Route path="messages" element={<HospitalMessenger />} />
-            <Route path="perfil-hospital" element={<HospitalProfile />} />
+            <Route path="perfil" element={<HospitalProfile />} />
           </Route>
 
           {/* Root Redirect */}
