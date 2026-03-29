@@ -164,6 +164,17 @@ export const Register: React.FC = () => {
               Icon={MdLock}
             />
 
+            <FormInput
+              id="register-address"
+              label="Endereço"
+              name="address"
+              type="text"
+              autoComplete="street-address"
+              register={register}
+              error={errors.address}
+              Icon={MdLocationOn}
+            />
+
             {activeRole === 'donor' ? (
               <BloodTypeSelect register={register} />
             ) : (
