@@ -126,6 +126,7 @@ export const DonorManagement: React.FC = () => {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [broadcastLoading, setBroadcastLoading] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
 
   const showToast = useCallback((message: string) => {
     setToast({ message });
@@ -167,6 +168,16 @@ export const DonorManagement: React.FC = () => {
   }, [showToast]);
 
   const readyCount = MOCK_DONORS.filter((d) => d.status === 'Ready').length;
+
+  const handleApprove = (id: string) => {
+    setContactedIds((prev) => new Set(prev).add(id));
+    // Aqui você pode chamar sua API também
+  };
+
+  const handleReject = (id: string) => {
+    setRejectedIds((prev) => new Set(prev).add(id));
+    // API de rejeitar
+  };
 
   return (
     <div className="space-y-5 max-w-6xl mx-auto px-0 sm:px-2 animate-fadeUp">
@@ -308,6 +319,8 @@ export const DonorManagement: React.FC = () => {
           {filtered.map((donor, i) => {
             const avatarColor = AVATAR_COLORS[i % AVATAR_COLORS.length];
             const isContacted = contactedIds.has(donor.id);
+            const isReady = donor.status === 'Ready';
+            const reject = !isReady && !isContacted;
             const isLoading = loadingId === donor.id;
 
             return (
@@ -382,31 +395,44 @@ export const DonorManagement: React.FC = () => {
                   </div>
 
                   {/* CTA */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleContact(donor)}
-                      disabled={isLoading || isContacted}
-                      className={cn(
-                        'flex-1 h-9 rounded-xl text-xs font-bold justify-between pr-3 transition-all border',
-                        isContacted
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-900/30'
-                          : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 hover:border-blue-200 dark:hover:border-blue-800'
-                      )}
-                    >
-                      <span>
-                        {isLoading ? (
-                          <LoadingDots />
-                        ) : isContacted ? (
-                          'Contactado ✓'
-                        ) : (
-                          'Ver Análise'
-                        )}
-                      </span>
-                      {!isLoading && !isContacted && (
-                        <MdChevronRight className="text-base" />
-                      )}
-                    </Button>
+                  {/* CTA */}
+                  {/* CTA - Dois botões lado a lado */}
+                  <div className="flex gap-2 pt-2">
+                    {isContacted ? (
+                      // Estado: Contactado
+                      <div className="flex-1 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/30 flex items-center justify-center">
+                        <span className="text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5">
+                          ✅ Contactado
+                        </span>
+                      </div>
+                    ) : rejectedIds.has(donor.id) ? (
+                      // Estado: Rejeitado
+                      <div className="flex-1 h-9 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/30 flex items-center justify-center">
+                        <span className="text-red-700 dark:text-red-300 text-xs font-bold flex items-center gap-1.5">
+                          ✕ Rejeitado
+                        </span>
+                      </div>
+                    ) : (
+                      // Dois botões lado a lado
+                      <>
+                        <Button
+                          onClick={() => handleApprove(donor.id)}
+                          disabled={isLoading}
+                          className="flex-1 h-9 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0"
+                        >
+                          {isLoading ? <LoadingDots /> : 'Aprovar Doação'}
+                        </Button>
+
+                        <Button
+                          variant="destructive"
+                          onClick={() => handleReject(donor.id)}
+                          disabled={isLoading}
+                          className="flex-1 h-9 rounded-xl text-xs font-bold"
+                        >
+                          {isLoading ? <LoadingDots /> : 'Rejeitar'}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>

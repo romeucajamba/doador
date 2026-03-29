@@ -88,10 +88,6 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
 
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <button className="relative p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              <MdNotifications className="text-2xl text-slate-600 dark:text-slate-300" />
-              <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
-            </button>
             <button
               onClick={() => navigate('/perfil')}
               className="size-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300"

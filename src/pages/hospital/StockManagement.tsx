@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { MdAdd, MdRemove, MdHistory, MdTune, MdWarning } from 'react-icons/md';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -33,23 +32,6 @@ export const StockManagement = () => {
             Gerencie as unidades de sangue e limites de alerta.
           </p>
         </motion.div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-lg shadow-sm border-slate-200"
-          >
-            <MdHistory className="mr-2 h-4 w-4" /> Histórico
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            className="rounded-lg shadow-md bg-red-600 hover:bg-red-700"
-          >
-            <MdTune className="mr-2 h-4 w-4" /> Ajustes
-          </Button>
-        </div>
       </header>
 
       {/* Grid de Cards */}

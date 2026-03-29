@@ -275,69 +275,6 @@ export const HospitalDashboard: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Quick actions + Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pb-6">
-        <div className="space-y-3">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wide">
-            Ações Rápidas
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            <ActionBtn
-              icon={<MdEvent />}
-              label="Agendar"
-              onClick={() => showToast('Abrindo agenda...')}
-            />
-            <ActionBtn
-              icon={<MdGroup />}
-              label="Doadores"
-              onClick={() => showToast('Carregando doadores...')}
-            />
-            <ActionBtn
-              icon={<MdAnalytics />}
-              label="Relatórios"
-              onClick={() => showToast('Gerando relatório...')}
-            />
-            <ActionBtn
-              icon={<MdLocalShipping />}
-              label="Transferências"
-              onClick={() => showToast('Abrindo transferências...')}
-            />
-          </div>
-        </div>
-
-        <div className="lg:col-span-2 space-y-3">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wide">
-            Atividade Recente
-          </h3>
-          <div className="space-y-2">
-            <ActivityItem
-              icon={<MdBloodtype className="text-emerald-500" />}
-              title="Nova Doação Recebida"
-              desc="Doador: João Silva (A+)"
-              time="10:30"
-              tag="+2 Un."
-              tagColor="green"
-            />
-            <ActivityItem
-              icon={<MdLocalShipping className="text-blue-500" />}
-              title="Transferência Enviada"
-              desc="Para: Hospital Central (O-)"
-              time="Ontem 16:15"
-              tag="-10 Un."
-              tagColor="blue"
-            />
-            <ActivityItem
-              icon={<MdPriorityHigh className="text-red-500" />}
-              title="Alerta Urgente"
-              desc="Stock de AB+ em nível crítico"
-              time="Ontem 09:00"
-              tag="Crítico"
-              tagColor="red"
-            />
-          </div>
-        </div>
-      </div>
-
       <style>{`
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
