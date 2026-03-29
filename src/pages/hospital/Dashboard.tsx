@@ -215,12 +215,6 @@ export const HospitalDashboard: React.FC = () => {
               Inventário em tempo real por tipo.
             </p>
           </div>
-          <Button
-            variant="ghost"
-            className="text-blue-600 dark:text-blue-400 font-bold text-xs h-8 px-3 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg shrink-0"
-          >
-            Ver tudo
-          </Button>
         </CardHeader>
         <CardContent className="p-5">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">

@@ -152,17 +152,6 @@ export const HospitalList: React.FC = () => {
             Encontre o lugar mais próximo para salvar vidas
           </p>
         </div>
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Button
-            variant="outline"
-            className="rounded-xl h-10 px-4 border-slate-200 dark:border-slate-700 font-semibold text-sm hidden sm:flex hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            Mapa
-          </Button>
-          <Button className="rounded-xl h-10 px-4 font-bold text-sm bg-primary shadow-md shadow-primary/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 transition-all duration-200">
-            Emergências
-          </Button>
-        </div>
       </div>
 
       {/* Search */}
@@ -310,23 +299,7 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <Button
-              variant="outline"
-              className="rounded-xl border-slate-200 dark:border-slate-700 font-semibold h-10 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs gap-1.5 transition-all active:scale-95"
-              onClick={onContact}
-              disabled={isContactLoading}
-              aria-label={`Contactar ${hospital.name}`}
-            >
-              {isContactLoading ? (
-                <LoadingDots />
-              ) : (
-                <>
-                  <MdCall className="text-sm text-primary" /> Contactar
-                </>
-              )}
-            </Button>
-
+          <div className="flex items-center justify-center gap-3">
             <Button
               className={cn(
                 'rounded-xl font-semibold h-10 text-xs gap-1.5 transition-all active:scale-95',

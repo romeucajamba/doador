@@ -142,9 +142,6 @@ export const Appointments: React.FC = () => {
             Gerencie seus donativos passados e futuros
           </p>
         </div>
-        <Button className="rounded-xl h-10 sm:h-11 px-5 font-bold text-sm bg-primary shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 self-start sm:self-auto">
-          + Novo Agendamento
-        </Button>
       </div>
 
       {/* Grid */}
@@ -223,29 +220,6 @@ export const Appointments: React.FC = () => {
                           }}
                         >
                           <MdInfo className="text-sm text-primary" /> Detalhes
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            'flex-1 h-9 rounded-xl font-semibold text-xs gap-1.5 border-slate-200 dark:border-slate-700 transition-all',
-                            downloadedIds.has(apt.id)
-                              ? 'text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950 dark:border-emerald-800'
-                              : 'hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:hover:bg-blue-950 dark:hover:border-blue-800'
-                          )}
-                          onClick={(e) => handleDownload(apt.id, e)}
-                          disabled={downloadingId === apt.id}
-                        >
-                          {downloadingId === apt.id ? (
-                            <LoadingDots />
-                          ) : downloadedIds.has(apt.id) ? (
-                            <>
-                              <MdCheckCircle className="text-sm" /> Salvo
-                            </>
-                          ) : (
-                            <>
-                              <MdFileDownload className="text-sm" /> Recibo
-                            </>
-                          )}
                         </Button>
                       </div>
 

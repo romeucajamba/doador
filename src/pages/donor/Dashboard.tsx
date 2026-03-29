@@ -259,12 +259,6 @@ export const DonorDashboard: React.FC = () => {
           <h2 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
             Atividade Recente
           </h2>
-          <Button
-            variant="ghost"
-            className="text-primary font-semibold text-xs h-8 px-3 hover:bg-primary/5 rounded-lg"
-          >
-            Ver tudo
-          </Button>
         </div>
 
         {appointments.length === 0 ? (
