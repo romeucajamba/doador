@@ -5,9 +5,8 @@ import {
   MdInventory,
   MdGroupAdd,
   MdChat,
-  MdNotifications,
-  MdSettings,
   MdLogout,
+  MdPerson,
 } from 'react-icons/md';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -57,6 +56,11 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
             icon={<MdChat />}
             label="Messages"
           />
+          <SideNavItem
+            to="/hospital/profile"
+            icon={<MdPerson />}
+            label="Profile"
+          />
         </nav>
 
         <div className="p-4 border-t border-slate-200 dark:border-slate-800">
@@ -78,22 +82,13 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
             Blood Hub
           </h2>
           <div className="hidden md:block">
-            <h2 className="text-sm font-medium text-slate-500">
-              Welcome back,
-            </h2>
             <p className="text-base font-bold text-slate-900 dark:text-white">
-              {hospital?.name || 'Administrator'}
+              {hospital?.name || 'Hospital'}
             </p>
           </div>
 
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <button
-              onClick={() => navigate('/perfil')}
-              className="size-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-600 dark:text-slate-300"
-            >
-              {hospital?.name?.charAt(0) || 'H'}
-            </button>
           </div>
         </header>
 
@@ -116,6 +111,11 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
               to="/hospital/donors"
               icon={<MdGroupAdd />}
               label="Donors"
+            />
+            <SideNavItem
+              to="/hospital/profile"
+              icon={<MdPerson />}
+              label="Profile"
             />
           </div>
         </nav>
