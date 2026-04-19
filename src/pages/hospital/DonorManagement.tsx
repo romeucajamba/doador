@@ -146,27 +146,6 @@ export const DonorManagement: React.FC = () => {
     [search, filterStatus]
   );
 
-  const handleContact = useCallback(
-    (donor: Donor) => {
-      if (loadingId || contactedIds.has(donor.id)) return;
-      setLoadingId(donor.id);
-      setTimeout(() => {
-        setLoadingId(null);
-        setContactedIds((prev) => new Set(prev).add(donor.id));
-        showToast(`Mensagem enviada para ${donor.name}.`);
-      }, 1200);
-    },
-    [loadingId, contactedIds, showToast]
-  );
-
-  const handleBroadcast = useCallback(() => {
-    setBroadcastLoading(true);
-    setTimeout(() => {
-      setBroadcastLoading(false);
-      showToast('Alerta enviado a todos os doadores disponíveis!');
-    }, 1800);
-  }, [showToast]);
-
   const readyCount = MOCK_DONORS.filter((d) => d.status === 'Ready').length;
 
   const handleApprove = (id: string) => {
@@ -205,21 +184,6 @@ export const DonorManagement: React.FC = () => {
             Gerencie e contacte a sua base de doadores registados.
           </p>
         </div>
-        <Button
-          onClick={handleBroadcast}
-          disabled={broadcastLoading}
-          className="h-9 px-4 rounded-xl font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-600/30 transition-all gap-1.5 self-start sm:self-auto"
-        >
-          {broadcastLoading ? (
-            <>
-              <LoadingDots /> A enviar...
-            </>
-          ) : (
-            <>
-              <MdEmail className="text-sm" /> Enviar Alerta
-            </>
-          )}
-        </Button>
       </div>
 
       {/* Summary pills */}

@@ -1,17 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback } from 'react';
-import {
-  MdEvent,
-  MdGroup,
-  MdAdd,
-  MdAnalytics,
-  MdBloodtype,
-  MdLocalShipping,
-  MdPriorityHigh,
-  MdCheckCircle,
-  MdFileDownload,
-  MdClose,
-} from 'react-icons/md';
+import { MdAdd, MdCheckCircle, MdClose } from 'react-icons/md';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useInventoryStore } from '@/stores/useInventoryStore';

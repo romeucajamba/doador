@@ -4,7 +4,6 @@ import {
   MdSearch,
   MdLocationOn,
   MdCall,
-  MdInfo,
   MdCalendarMonth,
   MdClose,
   MdCheckCircle,
@@ -14,6 +13,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { useNotificationStore } from '@/stores/useNotificationStore';
+import { BookingModal } from './modal';
 
 interface Hospital {
   id: string;
@@ -74,6 +74,8 @@ export const HospitalList: React.FC = () => {
   const [activeAction, setActiveAction] = useState<ActionState>(null);
   const [toast, setToast] = useState<ToastState>(null);
   const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
+  const [bookingHospital, setBookingHospital] = useState<Hospital | null>(null);
+
   const addNotification = useNotificationStore(
     (state) => state.addNotification
   );
@@ -200,11 +202,23 @@ export const HospitalList: React.FC = () => {
               isBookLoading={activeAction === `book-${hospital.id}`}
               isBooked={bookedIds.has(hospital.id)}
               onContact={() => handleContact(hospital)}
-              onBook={() => handleBook(hospital)}
+              onBook={() => setBookingHospital(hospital)}
             />
           ))
         )}
       </div>
+
+      {/* Modal — fica aqui no HospitalList, não dentro do HospitalCard */}
+      {bookingHospital && (
+        <BookingModal
+          hospital={bookingHospital}
+          onClose={() => setBookingHospital(null)}
+          onConfirm={() => {
+            handleBook(bookingHospital);
+            setBookingHospital(null);
+          }}
+        />
+      )}
 
       <style>{`
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
@@ -216,7 +230,7 @@ export const HospitalList: React.FC = () => {
   );
 };
 
-/* ─── Sub-components ─────────────────────────────────────────── */
+/* ─── HospitalCard ───────────────────────────────────────────── */
 
 interface HospitalCardProps {
   hospital: Hospital;
@@ -231,8 +245,6 @@ interface HospitalCardProps {
 const HospitalCard: React.FC<HospitalCardProps> = ({
   hospital,
   index,
-  isContactLoading,
-  isBookLoading,
   isBooked,
   onContact,
   onBook,
@@ -245,7 +257,6 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
       style={{ animationDelay: `${index * 80}ms` }}
     >
       <CardContent className="p-0">
-        {/* Top accent */}
         <div
           className={cn(
             'h-0.5 w-full',
@@ -308,12 +319,9 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
                   : 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-100 shadow-md shadow-slate-900/10'
               )}
               onClick={onBook}
-              disabled={isBookLoading || isBooked}
-              aria-label={`Agendar em ${hospital.name}`}
+              disabled={isBooked}
             >
-              {isBookLoading ? (
-                <LoadingDots />
-              ) : isBooked ? (
+              {isBooked ? (
                 <>
                   <MdCheckCircle className="text-sm" /> Enviado
                 </>
@@ -329,6 +337,8 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
     </Card>
   );
 };
+
+/* ─── EmptyState ─────────────────────────────────────────────── */
 
 interface EmptyStateProps {
   search: string;
@@ -359,16 +369,4 @@ const EmptyState: React.FC<EmptyStateProps> = ({ search, onClear }) => (
       Limpar pesquisa
     </Button>
   </div>
-);
-
-const LoadingDots: React.FC = () => (
-  <span className="flex items-center gap-0.5">
-    {[0, 150, 300].map((d) => (
-      <span
-        key={d}
-        className="w-1 h-1 rounded-full bg-current animate-bounce"
-        style={{ animationDelay: `${d}ms` }}
-      />
-    ))}
-  </span>
 );

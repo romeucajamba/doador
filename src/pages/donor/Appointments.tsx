@@ -219,7 +219,7 @@ export const Appointments: React.FC = () => {
                             setSelectedAppointment(apt);
                           }}
                         >
-                          <MdInfo className="text-sm text-primary" /> Detalhes
+                          Detalhes
                         </Button>
                       </div>
 
