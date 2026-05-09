@@ -117,6 +117,7 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
               icon={<MdPerson />}
               label="Profile"
             />
+            <MobileNavItem to="/" icon={<MdLogout />} label="Sair" />
           </div>
         </nav>
       </div>
