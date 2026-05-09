@@ -124,6 +124,8 @@ export const DonorLayout = ({ children }: DonorLayoutProps) => {
               label="Agenda"
             />
             <NavItem to="/donor/profile" icon={<MdPerson />} label="Perfil" />
+
+            <NavItem to="/" icon={<MdLogout />} label="Sair" />
           </div>
         </nav>
       </div>
