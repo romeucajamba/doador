@@ -11,10 +11,12 @@ import {
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { useAuthStore } from '@/stores/useAuthStore';
 import { useAppointmentStore } from '@/stores/useAppointmentStore';
-import { Donor } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { useGamificationStatus } from '@/service/donor/gami';
+import { useAuthStore } from '@/hooks/auth';
+import { GamificationStatus } from '@/types/donar';
+import { useDonorAppointments } from '@/service/donor/gender';
 
 type ImpactCardProps = {
   icon: React.ReactNode;
@@ -24,41 +26,49 @@ type ImpactCardProps = {
   delay?: number;
 };
 
-const IMPACT_STATS = (user: Donor | null) => [
-  {
-    icon: <MdBloodtype className="text-primary text-xl" />,
-    value: String(user?.totalDonations ?? 12),
-    label: 'Doações',
-    accent: 'bg-primary/10 dark:bg-primary/20',
-  },
-  {
-    icon: <MdFavorite className="text-rose-500 text-xl" />,
-    value: String(user?.livesSaved ?? 36),
-    label: 'Vidas Salvas',
-    accent: 'bg-rose-50 dark:bg-rose-950/50',
-  },
-  {
-    icon: <span className="text-lg leading-none">🏥</span>,
-    value: '3',
-    label: 'Centros',
-    accent: 'bg-slate-100 dark:bg-slate-800',
-  },
-  {
-    icon: <span className="text-lg leading-none">⭐</span>,
-    value: '450',
-    label: 'Pontos',
-    accent: 'bg-amber-50 dark:bg-amber-950/50',
-  },
-];
-
-const RANK_PROGRESS = 45;
-
 export const DonorDashboard: React.FC = () => {
-  const user = useAuthStore((state) => state.user) as Donor | null;
-  const appointments = useAppointmentStore((state) => state.appointments);
   const [isScheduling, setIsScheduling] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [progressWidth, setProgressWidth] = useState(0);
+  const { session } = useAuthStore();
+  const user = session?.user;
+  const { data: stats } = useGamificationStatus(user?.id_doador);
+  const {
+    data: appointments = [],
+    isLoading,
+    error,
+  } = useDonorAppointments(user?.id_doador);
+
+  const date = new Date();
+
+  const IMPACT_STATS = [
+    {
+      icon: <MdBloodtype className="text-primary text-xl" />,
+      value: String(stats?.total_doacoes ?? 0),
+      label: 'Doações',
+      accent: 'bg-primary/10 dark:bg-primary/20',
+    },
+    {
+      icon: <MdFavorite className="text-rose-500 text-xl" />,
+      value: String(stats?.vidas_salvas ?? 0),
+      label: 'Vidas Salvas',
+      accent: 'bg-rose-50 dark:bg-rose-950/50',
+    },
+    {
+      icon: <span className="text-lg leading-none">🏥</span>,
+      value: String(stats?.total_centros ?? 0),
+      label: 'Centros',
+      accent: 'bg-slate-100 dark:bg-slate-800',
+    },
+    {
+      icon: <span className="text-lg leading-none">⭐</span>,
+      value: String(stats?.pontuacao ?? 0),
+      label: 'Pontos',
+      accent: 'bg-amber-50 dark:bg-amber-950/50',
+    },
+  ];
+
+  const RANK_PROGRESS = stats?.pontuacao;
 
   useEffect(() => {
     const timer = setTimeout(() => setProgressWidth(RANK_PROGRESS), 600);
@@ -75,7 +85,7 @@ export const DonorDashboard: React.FC = () => {
     }, 1800);
   };
 
-  const firstName = user?.name?.split(' ')[0] ?? 'Doador';
+  const firstName = user?.nome_completo?.split(' ')[0] ?? 'Doador';
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto px-0 sm:px-2 animate-fadeUp">
@@ -86,21 +96,18 @@ export const DonorDashboard: React.FC = () => {
             Bem-vindo de volta
           </p>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            {firstName} 👋
+            {firstName}
           </h1>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <div className="size-9 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
             <span className="text-primary font-black text-sm">
-              {user?.bloodType ?? 'O+'}
+              {user?.tipo_sanguineo}
             </span>
           </div>
           <div>
             <p className="text-xs font-black text-slate-900 dark:text-white">
-              {user?.rank ?? 'Bronze'} Donor
-            </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-              Nível atual
+              pontuação: {stats?.pontuacao ?? 0}
             </p>
           </div>
         </div>
@@ -118,8 +125,7 @@ export const DonorDashboard: React.FC = () => {
               </div>
               <h3 className="text-2xl font-black mb-2">Agendado!</h3>
               <p className="text-sm font-medium opacity-90 max-w-xs">
-                Sua doação foi pré-agendada. Verifique seus agendamentos para
-                mais detalhes.
+                Verifique seus agendamentos para mais detalhes.
               </p>
             </div>
           )}
@@ -136,7 +142,7 @@ export const DonorDashboard: React.FC = () => {
                 <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mt-0.5">
                   O seu sangue{' '}
                   <strong className="font-black text-primary">
-                    {user?.bloodType ?? 'O+'}
+                    {user?.tipo_sanguineo}
                   </strong>{' '}
                   está em alta demanda em Luanda. Pode salvar até 3 vidas.
                 </p>
@@ -170,7 +176,7 @@ export const DonorDashboard: React.FC = () => {
                   Classificação
                 </p>
                 <p className="text-xl font-black text-slate-900 dark:text-white">
-                  {user?.rank ?? 'Bronze'}
+                  {stats?.pontuacao}
                 </p>
               </div>
               <div className="size-12 bg-amber-50 dark:bg-amber-950/50 rounded-xl flex items-center justify-center text-2xl">
@@ -194,7 +200,7 @@ export const DonorDashboard: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-              3 doações para alcançar o nível{' '}
+              {stats?.total_doacoes} doações para alcançar o nível{' '}
               <span className="font-bold text-slate-700 dark:text-slate-300">
                 Prata
               </span>
@@ -240,7 +246,7 @@ export const DonorDashboard: React.FC = () => {
           Seu Impacto
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {IMPACT_STATS(user).map(({ icon, value, label, accent }, i) => (
+          {IMPACT_STATS.map(({ icon, value, label, accent }, i) => (
             <ImpactCard
               key={label}
               icon={icon}
@@ -272,7 +278,7 @@ export const DonorDashboard: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {appointments.slice(0, 6).map((apt, i) => (
               <Card
-                key={apt.id}
+                key={apt.id_agenda}
                 className="border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer group rounded-xl bg-white dark:bg-slate-900"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
@@ -283,25 +289,25 @@ export const DonorDashboard: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm text-slate-900 dark:text-white truncate">
-                        {apt.hospitalName}
+                        {apt.hospital.nome}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
-                        {apt.date} · {apt.type}
+                        {apt.data_agendada} · {apt.hospital.status}
                       </p>
                     </div>
                     <Badge
                       className={cn(
                         'text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-lg border shrink-0',
-                        apt.status === 'completed'
+                        apt.status === 'confirmada'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
-                          : apt.status === 'pending'
+                          : apt.status === 'pendente'
                             ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
                             : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
                       )}
                     >
-                      {apt.status === 'completed'
+                      {apt.status === 'confirmada'
                         ? 'Feito'
-                        : apt.status === 'pending'
+                        : apt.status === 'pendente'
                           ? 'Pendente'
                           : 'Cancelado'}
                     </Badge>

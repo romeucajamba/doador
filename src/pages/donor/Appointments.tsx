@@ -5,8 +5,6 @@ import {
   MdLocationOn,
   MdAccessTime,
   MdCheckCircle,
-  MdFileDownload,
-  MdInfo,
   MdCancel,
   MdEditCalendar,
   MdClose,
@@ -14,33 +12,41 @@ import {
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { useAppointmentStore } from '@/stores/useAppointmentStore';
-import { Appointment } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { useDonorAppointments } from '@/service/donor/gender';
+import { useAuthStore } from '@/hooks/auth';
+import { Appointment } from '@/types/donar';
+import { Skeleton } from '@/components/ui/skeleton';
 
-type AppointmentStatus = 'completed' | 'pending' | 'cancelled';
+type AppointmentStatus = 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
 
 const STATUS_CONFIG: Record<
   AppointmentStatus,
   { label: string; bar: string; badge: string }
 > = {
-  completed: {
-    label: 'Concluído',
+  concluida: {
+    label: 'Concluida',
     bar: 'bg-emerald-500',
     badge:
       'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
   },
-  pending: {
-    label: 'Pendente',
+  pendente: {
+    label: 'pendente',
     bar: 'bg-amber-400',
     badge:
       'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
   },
-  cancelled: {
+  cancelada: {
     label: 'Cancelado',
     bar: 'bg-slate-300 dark:bg-slate-600',
     badge:
       'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
+  },
+  confirmada: {
+    label: 'Confirmada',
+    bar: 'bg-emerald-600',
+    badge:
+      'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
   },
 };
 
@@ -52,17 +58,26 @@ const PRIOR_INSTRUCTIONS = [
 ];
 
 export const Appointments: React.FC = () => {
-  const appointments = useAppointmentStore((state) => state.appointments);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
-  const [cancellingId, setCancellingId] = useState<string | null>(null);
-  const [rescheduleId, setRescheduleId] = useState<string | null>(null);
+
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+
+  const [rescheduleId, setRescheduleId] = useState<number | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'info';
   } | null>(null);
+
+  const { session } = useAuthStore();
+
+  const user = session?.user;
+
+  const {
+    data: appointments,
+    isLoading,
+    error,
+  } = useDonorAppointments(user?.id_doador);
 
   const showToast = useCallback(
     (message: string, type: 'success' | 'info' = 'success') => {
@@ -72,22 +87,8 @@ export const Appointments: React.FC = () => {
     []
   );
 
-  const handleDownload = useCallback(
-    (id: string, e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (downloadedIds.has(id)) return;
-      setDownloadingId(id);
-      setTimeout(() => {
-        setDownloadingId(null);
-        setDownloadedIds((prev) => new Set(prev).add(id));
-        showToast('Comprovativo gerado com sucesso!');
-      }, 1500);
-    },
-    [downloadedIds, showToast]
-  );
-
   const handleCancel = useCallback(
-    (id: string, e: React.MouseEvent) => {
+    (id: number, e: React.MouseEvent) => {
       e.stopPropagation();
       setCancellingId(id);
       setTimeout(() => {
@@ -99,7 +100,7 @@ export const Appointments: React.FC = () => {
   );
 
   const handleReschedule = useCallback(
-    (id: string, e: React.MouseEvent) => {
+    (id: number, e: React.MouseEvent) => {
       e.stopPropagation();
       setRescheduleId(id);
       setTimeout(() => {
@@ -113,7 +114,107 @@ export const Appointments: React.FC = () => {
   const closeModal = useCallback(() => setSelectedAppointment(null), []);
 
   const isValidStatus = (status: string): status is AppointmentStatus =>
-    ['completed', 'pending', 'cancelled'].includes(status);
+    ['pendente', 'confirmada', 'cancelada', 'concluida'].includes(status);
+
+  if (isLoading) {
+    return (
+      <div style={{ maxWidth: 700, margin: '0 auto' }}>
+        {/* Header */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 20,
+          }}
+        >
+          <Skeleton className="h-[22px] w-32 rounded-md" />
+        </div>
+
+        {/* Avatar card */}
+        <div
+          style={{
+            background: 'white',
+            borderRadius: 16,
+            padding: 24,
+            marginBottom: 16,
+            border: '1px solid #F3F4F6',
+            textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            {/* Spinner + avatar skeleton */}
+            <div style={{ position: 'relative', width: 96, height: 96 }}>
+              {/* Anel girante */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: '50%',
+                  border: '3px solid #f97316',
+                  borderTopColor: 'transparent',
+                  animation: 'spin 0.9s linear infinite',
+                }}
+              />
+              {/* Skeleton do avatar dentro */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 10,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                }}
+              >
+                <Skeleton className="w-full h-full rounded-full" />
+              </div>
+            </div>
+
+            <Skeleton className="h-[18px] w-40 rounded-lg" />
+            <Skeleton className="h-[14px] w-52 rounded-lg" />
+            <Skeleton className="h-6 w-28 rounded-full" />
+            <Skeleton className="h-3 w-36 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Form card */}
+        <div
+          style={{
+            background: 'white',
+            borderRadius: 16,
+            padding: 24,
+            border: '1px solid #F3F4F6',
+          }}
+        >
+          <Skeleton className="h-4 w-44 rounded-md mb-5" />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))',
+              gap: 14,
+            }}
+          >
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i}>
+                <Skeleton className="h-[11px] w-28 rounded mb-2" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </div>
+            ))}
+            <Skeleton className="h-10 w-full rounded-xl self-end" />
+          </div>
+        </div>
+
+        {/* Keyframe para o spinner — injeta uma vez */}
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto px-0 sm:px-2 animate-fadeUp">
@@ -146,7 +247,7 @@ export const Appointments: React.FC = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 pb-8">
-        {appointments.length === 0 ? (
+        {appointments?.length === 0 ? (
           <div className="col-span-full py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
             <MdCalendarMonth className="text-5xl text-slate-200 dark:text-slate-700 mx-auto mb-3" />
             <p className="text-slate-400 font-semibold text-sm">
@@ -154,13 +255,13 @@ export const Appointments: React.FC = () => {
             </p>
           </div>
         ) : (
-          appointments.map((apt, index) => {
-            const status = isValidStatus(apt.status) ? apt.status : 'pending';
+          appointments?.map((apt, index) => {
+            const status = isValidStatus(apt.status) ? apt.status : 'pendente';
             const config = STATUS_CONFIG[status];
 
             return (
               <Card
-                key={apt.id}
+                key={apt.id_agenda}
                 className="border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md overflow-hidden group cursor-pointer rounded-2xl bg-white dark:bg-slate-900 transition-all duration-300 hover:-translate-y-0.5"
                 style={{ animationDelay: `${index * 60}ms` }}
                 onClick={() => setSelectedAppointment(apt)}
@@ -174,11 +275,11 @@ export const Appointments: React.FC = () => {
                     <div className="flex justify-between items-start gap-2">
                       <div className="space-y-0.5 min-w-0">
                         <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">
-                          {apt.hospitalName}
+                          {apt.hospital.nome}
                         </h3>
                         <p className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-xs font-medium">
                           <MdAccessTime className="text-sm shrink-0" />
-                          {apt.date} · {apt.time}
+                          {apt.data_agendada} · {apt.hora_agendada}
                         </p>
                       </div>
                       <Badge
@@ -195,7 +296,7 @@ export const Appointments: React.FC = () => {
                     <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
                       <div className="size-9 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-600 shrink-0">
                         <span className="text-primary font-black text-xs">
-                          O+
+                          {apt.doador.tipo_sanguineo}
                         </span>
                       </div>
                       <div className="min-w-0">
@@ -203,7 +304,7 @@ export const Appointments: React.FC = () => {
                           Tipo de Doação
                         </p>
                         <p className="text-sm font-bold text-slate-900 dark:text-white uppercase truncate">
-                          {apt.type}
+                          {apt.doador.consentimento_sms}
                         </p>
                       </div>
                     </div>
@@ -223,15 +324,15 @@ export const Appointments: React.FC = () => {
                         </Button>
                       </div>
 
-                      {status === 'pending' && (
+                      {status === 'pendente' && (
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
                             className="flex-1 h-9 rounded-xl text-red-500 border-red-100 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-950 font-semibold text-xs gap-1.5 transition-all"
-                            onClick={(e) => handleCancel(apt.id, e)}
-                            disabled={cancellingId === apt.id}
+                            onClick={(e) => handleCancel(apt.id_agenda, e)}
+                            disabled={cancellingId === apt.id_agenda}
                           >
-                            {cancellingId === apt.id ? (
+                            {cancellingId === apt.id_agenda ? (
                               <LoadingDots />
                             ) : (
                               <>
@@ -241,10 +342,10 @@ export const Appointments: React.FC = () => {
                           </Button>
                           <Button
                             className="flex-1 h-9 rounded-xl font-semibold text-xs bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 transition-all gap-1.5"
-                            onClick={(e) => handleReschedule(apt.id, e)}
-                            disabled={rescheduleId === apt.id}
+                            onClick={(e) => handleReschedule(apt.id_agenda, e)}
+                            disabled={rescheduleId === apt.id_agenda}
                           >
-                            {rescheduleId === apt.id ? (
+                            {rescheduleId === apt.id_agenda ? (
                               <LoadingDots />
                             ) : (
                               <>
@@ -268,7 +369,7 @@ export const Appointments: React.FC = () => {
         (() => {
           const status = isValidStatus(selectedAppointment.status)
             ? selectedAppointment.status
-            : 'pending';
+            : 'pendente';
           const config = STATUS_CONFIG[status];
           return (
             <>
@@ -285,11 +386,10 @@ export const Appointments: React.FC = () => {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-white/70 text-xs font-semibold uppercase tracking-widest mb-1">
-                        Código #
-                        {selectedAppointment.id.substring(0, 8).toUpperCase()}
+                        Código #{selectedAppointment.id_agenda}
                       </p>
                       <h2 className="text-xl font-black leading-tight">
-                        {selectedAppointment.hospitalName}
+                        {selectedAppointment.hospital.nome}
                       </h2>
                     </div>
                     <button
@@ -319,13 +419,13 @@ export const Appointments: React.FC = () => {
                       {
                         icon: <MdCalendarMonth className="text-blue-500" />,
                         label: 'Data',
-                        value: selectedAppointment.date,
+                        value: selectedAppointment.data_agendada,
                         bg: 'bg-blue-50 dark:bg-blue-950',
                       },
                       {
                         icon: <MdAccessTime className="text-emerald-500" />,
                         label: 'Horário',
-                        value: selectedAppointment.time,
+                        value: selectedAppointment.hora_agendada,
                         bg: 'bg-emerald-50 dark:bg-emerald-950',
                       },
                     ].map(({ icon, label, value, bg }) => (
@@ -359,7 +459,7 @@ export const Appointments: React.FC = () => {
                         Localização
                       </p>
                       <p className="font-bold text-slate-900 dark:text-white text-sm">
-                        {selectedAppointment.hospitalName}
+                        {selectedAppointment.hospital.endereco}
                       </p>
                     </div>
                   </div>

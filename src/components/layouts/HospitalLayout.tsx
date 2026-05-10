@@ -112,7 +112,7 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
               icon={<MdGroupAdd />}
               label="Donors"
             />
-            <SideNavItem
+            <MobileNavItem
               to="/hospital/profile"
               icon={<MdPerson />}
               label="Profile"

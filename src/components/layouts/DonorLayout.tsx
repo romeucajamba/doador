@@ -5,12 +5,10 @@ import {
   MdLocationOn,
   MdCalendarMonth,
   MdPerson,
-  MdNotifications,
   MdLogout,
 } from 'react-icons/md';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/useAuthStore';
-import { Donor } from '@/lib/types';
+import { useAuthStore } from '@/hooks/auth';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { NotificationBell } from '../donor/NotificationBell';
 
@@ -19,8 +17,8 @@ interface DonorLayoutProps {
 }
 
 export const DonorLayout = ({ children }: DonorLayoutProps) => {
-  const { user, logout } = useAuthStore();
-  const donor = user as Donor;
+  const { logout, session } = useAuthStore();
+  const user = session?.user;
 
   return (
     <div className="flex min-h-screen w-full bg-slate-50 dark:bg-slate-950 font-sans">
@@ -56,15 +54,13 @@ export const DonorLayout = ({ children }: DonorLayoutProps) => {
 
         <div className="p-4 border-t border-gray-100 dark:border-slate-800 space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">
-              {donor?.name?.charAt(0) || 'U'}
-            </div>
+            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold"></div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-dark-text dark:text-white truncate">
-                {donor?.name || 'Usuário'}
+                {user?.nome_completo || ''}
               </p>
               <p className="text-[10px] text-neutral-text font-bold uppercase tracking-widest">
-                {donor?.bloodType || 'O+'}
+                {user?.tipo_sanguineo || ''}
               </p>
             </div>
           </div>
@@ -91,7 +87,7 @@ export const DonorLayout = ({ children }: DonorLayoutProps) => {
               Seja bem-vindo,
             </h2>
             <p className="text-lg font-black text-dark-text dark:text-white">
-              {donor?.name || 'Usuário'}
+              {user?.nome_completo || ''}
             </p>
           </div>
 

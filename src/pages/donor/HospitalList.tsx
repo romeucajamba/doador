@@ -14,80 +14,43 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { BookingModal } from './modal';
+import { useHospitals } from '@/service/hospital/hospital';
+import { Hospital } from '@/types/hospital';
 
-interface Hospital {
-  id: string;
-  name: string;
-  address: string;
-  distance: string;
-  status: string;
-  type: HospitalType;
-  phone: string;
-}
-
-type HospitalType = 'Public Hospital' | 'Private Clinic' | 'Blood Center';
-type ActionState = `contact-${string}` | `book-${string}` | null;
+// ── Tipos locais apenas para UI ──────────────────────────────────────────────
+type ActionState = `contact-${number}` | `book-${number}` | null;
 type ToastState = { message: string; hospitalName: string } | null;
 
-const MOCK_HOSPITALS: Hospital[] = [
-  {
-    id: 'h1',
-    name: 'Hospital Josina Machel',
-    address: 'Rua Neves Freire, Luanda',
-    distance: '1.2 km',
-    status: 'Urgente O- necessário',
-    type: 'Public Hospital',
-    phone: '+244 923 111 222',
-  },
-  {
-    id: 'h2',
-    name: 'Clínica Girassol',
-    address: 'Rua Comandante Gika, Luanda',
-    distance: '3.5 km',
-    status: 'Aceita todos os tipos',
-    type: 'Private Clinic',
-    phone: '+244 923 333 444',
-  },
-  {
-    id: 'h3',
-    name: 'Centro de Hemoterapia de Luanda',
-    address: 'Avenida Deolinda Rodrigues',
-    distance: '4.8 km',
-    status: 'Campanha Hoje',
-    type: 'Blood Center',
-    phone: '+244 923 555 666',
-  },
-];
-
-const TYPE_LABELS: Record<HospitalType, string> = {
-  'Public Hospital': 'Hospital Público',
-  'Private Clinic': 'Clínica Privada',
-  'Blood Center': 'Centro de Sangue',
-};
-
+// ── Helpers ──────────────────────────────────────────────────────────────────
 const isUrgent = (status: string) =>
   status.toLowerCase().includes('urgente') ||
   status.toLowerCase().includes('urgent');
+
+// A API não devolve distância — deixamos vazio até o backend suportar
+const formatPhone = (phone: string) => phone || '—';
 
 export const HospitalList: React.FC = () => {
   const [search, setSearch] = useState('');
   const [activeAction, setActiveAction] = useState<ActionState>(null);
   const [toast, setToast] = useState<ToastState>(null);
-  const [bookedIds, setBookedIds] = useState<Set<string>>(new Set());
+  const [bookedIds, setBookedIds] = useState<Set<number>>(new Set());
   const [bookingHospital, setBookingHospital] = useState<Hospital | null>(null);
+
+  const { data: hospitals = [], isLoading, error } = useHospitals();
 
   const addNotification = useNotificationStore(
     (state) => state.addNotification
   );
 
+  // Filtra por nome ou endereço usando os campos reais da API
   const filtered = useMemo(
     () =>
-      MOCK_HOSPITALS.filter(
+      hospitals.filter(
         (h) =>
-          h.name.toLowerCase().includes(search.toLowerCase()) ||
-          h.address.toLowerCase().includes(search.toLowerCase())
+          h.nome.toLowerCase().includes(search.toLowerCase()) ||
+          h.endereco.toLowerCase().includes(search.toLowerCase())
       ),
-    [search]
+    [hospitals, search]
   );
 
   const showToast = useCallback((message: string, hospitalName: string) => {
@@ -97,12 +60,12 @@ export const HospitalList: React.FC = () => {
 
   const handleContact = useCallback(
     (hospital: Hospital) => {
-      const key: ActionState = `contact-${hospital.id}`;
+      const key: ActionState = `contact-${hospital.id_hospital}`;
       if (activeAction === key) return;
       setActiveAction(key);
       setTimeout(() => {
         setActiveAction(null);
-        showToast(`A ligar para ${hospital.name}...`, hospital.name);
+        showToast(`A ligar para ${hospital.nome}...`, hospital.nome);
       }, 1000);
     },
     [activeAction, showToast]
@@ -110,22 +73,39 @@ export const HospitalList: React.FC = () => {
 
   const handleBook = useCallback(
     (hospital: Hospital) => {
-      const key: ActionState = `book-${hospital.id}`;
-      if (activeAction === key || bookedIds.has(hospital.id)) return;
+      const key: ActionState = `book-${hospital.id_hospital}`;
+      if (activeAction === key || bookedIds.has(hospital.id_hospital)) return;
       setActiveAction(key);
       setTimeout(() => {
         setActiveAction(null);
-        setBookedIds((prev) => new Set(prev).add(hospital.id));
+        setBookedIds((prev) => new Set(prev).add(hospital.id_hospital));
         addNotification({
           title: 'Pedido de Agendamento',
-          message: `Interesse enviado para ${hospital.name}. Eles confirmarão em breve.`,
-          type: 'success',
+          message: `Interesse enviado para ${hospital.nome}. Eles confirmarão em breve.`,
+          type: 'sucesso',
         });
-        showToast('Pedido de agendamento enviado!', hospital.name);
+        showToast('Pedido de agendamento enviado!', hospital.nome);
       }, 1500);
     },
     [activeAction, bookedIds, addNotification, showToast]
   );
+
+  // ── Estados de carregamento e erro ────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-24 text-slate-400 text-sm font-medium">
+        A carregar centros de doação...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-24 text-red-500 text-sm font-medium">
+        Erro ao carregar hospitais. Tente novamente mais tarde.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 max-w-6xl mx-auto px-0 sm:px-2 animate-fadeUp">
@@ -195,12 +175,14 @@ export const HospitalList: React.FC = () => {
         ) : (
           filtered.map((hospital, i) => (
             <HospitalCard
-              key={hospital.id}
+              key={hospital.id_hospital}
               hospital={hospital}
               index={i}
-              isContactLoading={activeAction === `contact-${hospital.id}`}
-              isBookLoading={activeAction === `book-${hospital.id}`}
-              isBooked={bookedIds.has(hospital.id)}
+              isContactLoading={
+                activeAction === `contact-${hospital.id_hospital}`
+              }
+              isBookLoading={activeAction === `book-${hospital.id_hospital}`}
+              isBooked={bookedIds.has(hospital.id_hospital)}
               onContact={() => handleContact(hospital)}
               onBook={() => setBookingHospital(hospital)}
             />
@@ -208,7 +190,7 @@ export const HospitalList: React.FC = () => {
         )}
       </div>
 
-      {/* Modal — fica aqui no HospitalList, não dentro do HospitalCard */}
+      {/* Modal */}
       {bookingHospital && (
         <BookingModal
           hospital={bookingHospital}
@@ -269,21 +251,18 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1 min-w-0">
               <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold px-2 py-0.5 rounded-lg text-[9px] tracking-wider uppercase border-0">
-                {TYPE_LABELS[hospital.type]}
+                Hospital
               </Badge>
               <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors line-clamp-1">
-                {hospital.name}
+                {hospital.nome}
               </h3>
             </div>
-            <span className="text-[10px] font-bold text-primary bg-primary/10 dark:bg-primary/20 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shrink-0 border border-primary/10">
-              <MdLocationOn className="text-sm" /> {hospital.distance}
-            </span>
           </div>
 
           {/* Address */}
           <div className="flex items-start gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl">
             <MdLocationOn className="text-base text-blue-500 shrink-0 mt-0.5" />
-            <span className="leading-relaxed">{hospital.address}</span>
+            <span className="leading-relaxed">{hospital.endereco}</span>
           </div>
 
           {/* Status */}
@@ -306,7 +285,7 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
           {/* Phone */}
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium px-1">
             <MdCall className="text-sm text-slate-400 shrink-0" />
-            <span>{hospital.phone}</span>
+            <span>{formatPhone(hospital.telefone)}</span>
           </div>
 
           {/* Actions */}
@@ -338,7 +317,7 @@ const HospitalCard: React.FC<HospitalCardProps> = ({
   );
 };
 
-/* ─── EmptyState ─────────────────────────────────────────────── */
+/* ─── EmptyState — igual ao original ────────────────────────── */
 
 interface EmptyStateProps {
   search: string;

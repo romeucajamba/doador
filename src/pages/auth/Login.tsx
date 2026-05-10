@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/Button';
 import {
   Card,
@@ -12,47 +11,20 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/Card';
-import { useAuthStore } from '@/stores/useAuthStore';
 import { cn } from '@/lib/utils';
 import { MdEmail, MdLock, MdPerson, MdLocalHospital } from 'react-icons/md';
+import { LoginFormValues, loginSchema } from '@/schemas/donor';
+import axios from 'axios';
+import { useAuth } from '@/service/donor/login';
+import { useAuthStore } from '@/hooks/auth';
 
-const loginSchema = z.object({
-  email: z.string().email('Endereço de e-mail inválido'),
-  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
-  role: z.enum(['donor', 'hospital']),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-
-type Role = 'donor' | 'hospital';
-
-type DonorUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: 'donor';
-  bloodType: string;
-  totalDonations: number;
-  livesSaved: number;
-  rank: string;
-};
-
-type HospitalUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: 'hospital';
-  address: string;
-  phone: string;
-  inventory: Record<string, unknown>;
-};
-
-type MockUser = DonorUser | HospitalUser;
+export type Role = 'donor' | 'hospital';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
   const [activeRole, setActiveRole] = useState<Role>('donor');
+  const [serverError, setServerError] = useState<string | null>(null);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const {
     register,
@@ -61,51 +33,54 @@ export const Login: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { role: 'donor' },
+    defaultValues: { email: '', senha: '' },
   });
 
   const handleRoleChange = (role: Role) => {
     setActiveRole(role);
-    setValue('role', role);
+    setServerError(null);
   };
+
+  const { mutateAsync: authLogin, isPending } = useAuth();
 
   const onSubmit = async (data: LoginFormValues): Promise<void> => {
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const mockUser: MockUser =
-          data.role === 'donor'
-            ? {
-                id: 'd1',
-                name: 'Miguel Silva',
-                email: data.email,
-                role: 'donor',
-                bloodType: 'O+',
-                totalDonations: 12,
-                livesSaved: 36,
-                rank: 'Bronze',
-              }
-            : {
-                id: 'h1',
-                name: "St. Luke's Hospital",
-                email: data.email,
-                role: 'hospital',
-                address: 'Rua da Independência, Luanda',
-                phone: '+244 923 000 000',
-                inventory: {},
-              };
+    setServerError(null);
+    try {
+      // role só determina qual endpoint chamar — não vai no body
+      //const response = await loginRequest(data.email, data.senha, activeRole);
 
-        login(mockUser);
-        navigate(
-          data.role === 'donor' ? '/donor/dashboard' : '/hospital/dashboard'
-        );
-        resolve();
-      }, 1000);
-    });
+      const response = await authLogin(data);
+
+      // Guarda no store com os dados reais do backend
+      setAuth({
+        ...response,
+        role: activeRole,
+      });
+
+      navigate(
+        activeRole === 'donor' ? '/donor/dashboard' : '/hospital/dashboard'
+      );
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 401) {
+          setServerError('Email ou senha incorrectos. Tente novamente.');
+        } else if (status === 404) {
+          setServerError('Conta não encontrada. Verifique o email.');
+        } else if (!err.response) {
+          setServerError('Sem ligação ao servidor. Verifique a sua internet.');
+        } else {
+          setServerError('Ocorreu um erro. Tente novamente mais tarde.');
+        }
+      } else {
+        setServerError('Erro inesperado. Tente novamente.');
+      }
+    }
   };
 
+  // ── JSX — idêntico ao original excepto o banner de erro ──────────────────
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 transition-colors duration-500">
-      {/* Background decorative blobs */}
       <div
         className="pointer-events-none fixed inset-0 overflow-hidden"
         aria-hidden="true"
@@ -130,7 +105,6 @@ export const Login: React.FC = () => {
         </CardHeader>
 
         <CardContent className="space-y-5 px-5 sm:px-8 pb-8">
-          {/* Role Selection */}
           <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl">
             <RoleButton
               active={activeRole === 'donor'}
@@ -153,12 +127,23 @@ export const Login: React.FC = () => {
             className="space-y-4"
             noValidate
           >
-            <input type="hidden" {...register('role')} value={activeRole} />
+            {/* Erro do servidor */}
+            {serverError && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+              >
+                <span className="text-red-500 text-xs font-bold mt-0.5">⚠</span>
+                <p className="text-red-600 dark:text-red-400 text-xs font-semibold">
+                  {serverError}
+                </p>
+              </div>
+            )}
 
-            {/* Email */}
             <FormField
               label="E-mail"
               error={errors.email?.message}
+              errorId="login-email-error"
               icon={
                 <MdEmail
                   className={cn(
@@ -190,16 +175,15 @@ export const Login: React.FC = () => {
               />
             </FormField>
 
-            {/* Password */}
             <FormField
               label="Senha"
-              error={errors.password?.message}
+              error={errors.senha?.message}
               errorId="login-password-error"
               icon={
                 <MdLock
                   className={cn(
                     'absolute left-4 top-1/2 -translate-y-1/2 text-xl transition-colors',
-                    errors.password
+                    errors.senha
                       ? 'text-red-500'
                       : 'text-slate-400 group-focus-within:text-primary'
                   )}
@@ -208,21 +192,21 @@ export const Login: React.FC = () => {
               }
             >
               <input
-                {...register('password')}
+                {...register('senha')}
                 type="password"
-                id="login-password"
+                id="login-senha"
                 autoComplete="current-password"
                 className={cn(
                   'w-full bg-slate-50 dark:bg-slate-800 border-2 rounded-2xl py-3.5 sm:py-4 pl-12 pr-4 outline-none transition-all font-medium text-slate-900 dark:text-white text-sm sm:text-base placeholder:text-slate-400',
-                  errors.password
+                  errors.senha
                     ? 'border-red-200 dark:border-red-900/50 focus:border-red-500'
                     : 'border-transparent focus:border-primary/30 focus:bg-white dark:focus:bg-slate-900'
                 )}
                 placeholder="••••••••"
                 aria-describedby={
-                  errors.password ? 'login-password-error' : undefined
+                  errors.senha ? 'login-senha-error' : undefined
                 }
-                aria-invalid={!!errors.password}
+                aria-invalid={!!errors.senha}
               />
             </FormField>
 
@@ -264,8 +248,7 @@ export const Login: React.FC = () => {
   );
 };
 
-/* ─── Sub-components ─────────────────────────────────────────── */
-
+// Sub-componentes iguais ao original
 interface RoleButtonProps {
   active: boolean;
   onClick: () => void;

@@ -1,6 +1,6 @@
-import { ReactNode, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/stores/useAuthStore';
+import { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '@/hooks/auth';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -11,24 +11,26 @@ export const ProtectedRoute = ({
   children,
   allowedRole,
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, user } = useAuthStore();
-  const navigate = useNavigate();
+  const { isAuthenticated, session } = useAuthStore();
   const location = useLocation();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: location } });
-    } else if (allowedRole && user?.role !== allowedRole) {
-      // Redirect to their own dashboard if they try to access the wrong area
-      navigate(
-        user?.role === 'donor' ? '/donor/dashboard' : '/hospital/dashboard'
-      );
-    }
-  }, [isAuthenticated, user, allowedRole, navigate, location]);
+  const userRole = session?.role; // garante consistência
 
-  if (!isAuthenticated || (allowedRole && user?.role !== allowedRole)) {
-    return null;
+  // 1. Não autenticado → login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
+  // 2. Role errada → redireciona para dashboard correto
+  if (allowedRole && userRole !== allowedRole) {
+    return (
+      <Navigate
+        to={userRole === 'donor' ? '/donor/dashboard' : '/hospital/dashboard'}
+        replace
+      />
+    );
+  }
+
+  // 3. OK → renderiza rota
   return <>{children}</>;
 };

@@ -11,21 +11,25 @@ import {
   Notification,
 } from '@/stores/useNotificationStore';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/Button';
+import { useAuthStore } from '@/hooks/auth';
+import { useDonorNotifications } from '@/service/donor/notifications';
 
 export const NotificationBell = () => {
-  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { markAsRead, markAllAsRead } = useNotificationStore();
   const [isOpen, setIsOpen] = useState(false);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { session } = useAuthStore();
+  const user = session?.user;
+
+  const { data: notifications = [] } = useDonorNotifications(user?.id_doador);
+
+  const unreadCount = notifications.filter((n) => !n.status_envio).length;
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'success':
+      case 'sucesso':
         return <MdCheckCircle className="text-success" />;
-      case 'warning':
-        return <MdWarning className="text-warning" />;
-      case 'error':
+      case 'erro':
         return <MdError className="text-destructive" />;
       default:
         return <MdInfo className="text-info" />;
@@ -77,41 +81,36 @@ export const NotificationBell = () => {
               ) : (
                 notifications.map((n) => (
                   <div
-                    key={n.id}
+                    key={n.id_notificacao}
                     onClick={() => {
-                      markAsRead(n.id);
+                      markAsRead(String(n.id_notificacao));
                     }}
                     className={cn(
                       'p-4 border-b border-gray-50 dark:border-slate-800/50 flex gap-3 cursor-pointer transition-colors',
-                      !n.read
+                      !n.status_envio
                         ? 'bg-primary/5 dark:bg-primary/10'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     )}
                   >
                     <div className="text-xl mt-1 shrink-0">
-                      {getIcon(n.type)}
+                      {getIcon(n.status_envio ?? 'sucesso')}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start mb-1">
                         <p
                           className={cn(
                             'font-bold text-sm truncate',
-                            !n.read
+                            !n.status_envio
                               ? 'text-dark-text dark:text-white'
                               : 'text-neutral-text'
                           )}
-                        >
-                          {n.title}
-                        </p>
-                        {!n.read && (
+                        ></p>
+                        {!n.status_envio && (
                           <div className="size-2 bg-primary rounded-full shrink-0 mt-1.5" />
                         )}
                       </div>
                       <p className="text-xs text-neutral-text line-clamp-2 leading-relaxed mb-1">
-                        {n.message}
-                      </p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                        {n.time}
+                        {n.mensagem_enviada}
                       </p>
                     </div>
                   </div>

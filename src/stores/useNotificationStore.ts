@@ -8,7 +8,7 @@ export interface Notification {
   message: string;
   time: string;
   read: boolean;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: 'sucesso' | 'erro';
 }
 
 interface NotificationState {
@@ -40,7 +40,7 @@ export const useNotificationStore = create<NotificationState>()(
             'Thank you for your donation at Hospital Josina Machel! You saved 3 lives.',
           time: '2 hours ago',
           read: false,
-          type: 'success',
+          type: 'sucesso',
         },
         {
           id: '2',
@@ -49,7 +49,7 @@ export const useNotificationStore = create<NotificationState>()(
             'Urgent need for O+ blood at Clinica Girassol. Can you help?',
           time: '5 hours ago',
           read: false,
-          type: 'warning',
+          type: 'erro',
         },
         {
           id: '3',
@@ -58,7 +58,7 @@ export const useNotificationStore = create<NotificationState>()(
             'Centro de Hemoterapia de Luanda is now accepting appointments.',
           time: 'Yesterday',
           read: true,
-          type: 'info',
+          type: 'sucesso',
         },
       ],
       addNotification: (n) =>
