@@ -211,8 +211,8 @@ export const Profile: React.FC = () => {
                   className="w-full p-2 rounded border"
                 >
                   {BLOOD_TYPES.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
+                    <option key={b.label} value={b.value}>
+                      {b.value}
                     </option>
                   ))}
                 </select>

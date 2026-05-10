@@ -62,3 +62,37 @@ export interface DonorNotification {
   status_envio: 'sucesso' | 'erro';
   codigo_erro: string;
 }
+
+export type TipoSanguineo =
+  | 'A_POS'
+  | 'A_NEG'
+  | 'B_POS'
+  | 'B_NEG'
+  | 'O_POS'
+  | 'O_NEG'
+  | 'AB_POS'
+  | 'AB_NEG';
+
+export type CreateDoadorInput = {
+  nome_completo: string;
+  telefone: string;
+  email?: string | null;
+  senha?: string;
+  tipo_sanguineo: TipoSanguineo;
+  id_municipio: number;
+  data_nascimento?: string | null; // YYYY-MM-DD — backend transforma em Date
+  consentimento_sms?: boolean;
+};
+
+export type DoadorResponse = {
+  id_doador: number;
+  nome_completo: string;
+  telefone: string;
+  email: string;
+  tipo_sanguineo: TipoSanguineo;
+  id_municipio: number;
+  data_nascimento: string;
+  data_cadastro: string;
+  status: string;
+  consentimento_sms: boolean;
+};
