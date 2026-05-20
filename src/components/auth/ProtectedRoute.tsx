@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/hooks/auth';
+import { useHospitalAuthStore } from '@/hooks/hospitalAuth';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -11,26 +12,27 @@ export const ProtectedRoute = ({
   children,
   allowedRole,
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, session } = useAuthStore();
   const location = useLocation();
 
-  const userRole = session?.role; // garante consistência
+  const donorAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const donorRole = useAuthStore((s) => s.session?.role);
+  const hospitalAuthenticated = useHospitalAuthStore((s) => s.isAuthenticated);
 
-  // 1. Não autenticado → login
-  if (!isAuthenticated) {
+  const isDonor = donorAuthenticated && donorRole === 'donor';
+  const isHospital = hospitalAuthenticated;
+
+  // 1. Ninguém autenticado → login (nunca faz redirect para rota protegida)
+  if (!isDonor && !isHospital) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // 2. Role errada → redireciona para dashboard correto
-  if (allowedRole && userRole !== allowedRole) {
-    return (
-      <Navigate
-        to={userRole === 'donor' ? '/donor/dashboard' : '/hospital/dashboard'}
-        replace
-      />
-    );
-  }
+  // 2. Role certa → passa
+  if (!allowedRole) return <>{children}</>;
+  if (allowedRole === 'donor' && isDonor) return <>{children}</>;
+  if (allowedRole === 'hospital' && isHospital) return <>{children}</>;
 
-  // 3. OK → renderiza rota
-  return <>{children}</>;
+  // 3. Role errada → redireciona para a dashboard do utilizador actual
+  //    (nunca para uma rota protegida do role errado)
+  const redirectTo = isDonor ? '/donor/dashboard' : '/hospital/dashboard';
+  return <Navigate to={redirectTo} replace />;
 };

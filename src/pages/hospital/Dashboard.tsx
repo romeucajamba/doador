@@ -4,7 +4,7 @@ import { MdAdd, MdCheckCircle, MdClose } from 'react-icons/md';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useInventoryStore } from '@/stores/useInventoryStore';
-import { BloodType } from '@/lib/types';
+import { BloodType } from '@/lib/hospital';
 import { cn } from '@/lib/utils';
 
 type StockStatus = 'critical' | 'low' | 'stable';

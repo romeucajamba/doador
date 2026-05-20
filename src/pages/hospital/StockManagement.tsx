@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useInventoryStore } from '@/stores/useInventoryStore';
-import { BloodType } from '@/lib/types';
+import { BloodType } from '@/lib/hospital';
 import { cn } from '@/lib/utils';
 
 export const StockManagement = () => {

@@ -117,12 +117,6 @@ export const NotificationBell = () => {
                 ))
               )}
             </div>
-
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 text-center">
-              <button className="text-[10px] font-black text-dark-text dark:text-white uppercase tracking-widest hover:underline">
-                View all activity
-              </button>
-            </div>
           </div>
         </>
       )}

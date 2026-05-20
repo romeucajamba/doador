@@ -9,8 +9,7 @@ import {
   MdPerson,
 } from 'react-icons/md';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/useAuthStore';
-import { Hospital } from '@/lib/types';
+import { useHospitalAuthStore } from '@/hooks/hospitalAuth';
 import { ThemeToggle } from '../ui/ThemeToggle';
 
 interface HospitalLayoutProps {
@@ -18,8 +17,8 @@ interface HospitalLayoutProps {
 }
 
 export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
-  const { user, logout } = useAuthStore();
-  const hospital = user as Hospital;
+  const { user, logoutHospital } = useHospitalAuthStore();
+  const hospital = user;
   const navigate = useNavigate();
 
   return (
@@ -65,7 +64,7 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
 
         <div className="p-4 border-t border-slate-200 dark:border-slate-800">
           <button
-            onClick={logout}
+            onClick={logoutHospital}
             className="flex items-center gap-3 w-full p-3 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors"
           >
             <MdLogout className="text-xl" />
@@ -83,7 +82,7 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
           </h2>
           <div className="hidden md:block">
             <p className="text-base font-bold text-slate-900 dark:text-white">
-              {hospital?.name || 'Hospital'}
+              {hospital?.nome || 'Hospital'}
             </p>
           </div>
 

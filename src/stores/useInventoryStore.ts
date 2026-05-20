@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { BloodType } from '../lib/types';
+import { BloodType } from '../lib/hospital';
 
 interface InventoryState {
   stock: Record<BloodType, number>;

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Donor, Hospital } from '../lib/types';
+import { User, Donor, Hospital } from '../lib/hospital';
 
 import Cookies from 'js-cookie';
 

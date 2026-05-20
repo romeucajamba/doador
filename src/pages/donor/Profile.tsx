@@ -162,12 +162,11 @@ export const Profile: React.FC = () => {
                 </strong>{' '}
                 com os seus donativos regulares.
               </p>
-              <Button
-                variant="outline"
-                className="w-full h-9 rounded-xl bg-white/15 border-white/25 text-white hover:bg-white hover:text-primary transition-all font-bold text-xs"
-              >
-                Quantidade de hospitais {String(stats?.total_centros ?? 0)}
-              </Button>
+              <div className="w-full h-9 rounded-xl bg-white/15 border-white/25 text-white font-bold text-xs p-2">
+                <span>
+                  Quantidade de hospitais {String(stats?.total_centros ?? 0)}
+                </span>
+              </div>
             </CardContent>
           </Card>
         </Card>

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Appointment } from '../lib/types';
+import { Appointment } from '../lib/hospital';
 
 interface AppointmentState {
   appointments: Appointment[];

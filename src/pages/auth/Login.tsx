@@ -16,7 +16,9 @@ import { MdEmail, MdLock, MdPerson, MdLocalHospital } from 'react-icons/md';
 import { LoginFormValues, loginSchema } from '@/schemas/donor';
 import axios from 'axios';
 import { useAuth } from '@/service/donor/login';
+import { useHospitalLogin } from '@/service/hospital/hospital';
 import { useAuthStore } from '@/hooks/auth';
+import { useHospitalAuthStore } from '@/hooks/hospitalAuth';
 
 export type Role = 'donor' | 'hospital';
 
@@ -24,63 +26,65 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const [activeRole, setActiveRole] = useState<Role>('donor');
   const [serverError, setServerError] = useState<string | null>(null);
-  const setAuth = useAuthStore((state) => state.setAuth);
 
+  // Stores
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const { loginHospital } = useHospitalAuthStore();
+
+  // Form — partilhado entre os dois roles (mesmos campos: email + senha)
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', senha: '' },
   });
 
+  // Mutations
+  const { mutateAsync: authLogin } = useAuth();
+  const { mutateAsync: hospitalLogin } = useHospitalLogin();
+
   const handleRoleChange = (role: Role) => {
     setActiveRole(role);
     setServerError(null);
   };
 
-  const { mutateAsync: authLogin, isPending } = useAuth();
-
+  // ── Submit unificado — chama o endpoint certo conforme o role ─────────────
   const onSubmit = async (data: LoginFormValues): Promise<void> => {
     setServerError(null);
+
     try {
-      // role só determina qual endpoint chamar — não vai no body
-      //const response = await loginRequest(data.email, data.senha, activeRole);
+      if (activeRole === 'donor') {
+        const response = await authLogin(data);
 
-      const response = await authLogin(data);
+        setAuth({
+          ...response,
+          role: 'donor',
+        });
 
-      // Guarda no store com os dados reais do backend
-      setAuth({
-        ...response,
-        role: activeRole,
+        navigate('/donor/dashboard');
+        return;
+      }
+
+      // ── Hospital ──────────────────────────────────────────────────────────
+      const response = await hospitalLogin({
+        email: data.email,
+        senha: data.senha,
       });
 
-      navigate(
-        activeRole === 'donor' ? '/donor/dashboard' : '/hospital/dashboard'
-      );
+      // Guarda token nos cookies via Zustand persist
+      loginHospital(response.token, response.user);
+
+      navigate('/hospital/dashboard');
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const status = err.response?.status;
-        if (status === 401) {
-          setServerError('Email ou senha incorrectos. Tente novamente.');
-        } else if (status === 404) {
-          setServerError('Conta não encontrada. Verifique o email.');
-        } else if (!err.response) {
-          setServerError('Sem ligação ao servidor. Verifique a sua internet.');
-        } else {
-          setServerError('Ocorreu um erro. Tente novamente mais tarde.');
-        }
-      } else {
-        setServerError('Erro inesperado. Tente novamente.');
-      }
+      setServerError(resolveAxiosError(err));
     }
   };
 
-  // ── JSX — idêntico ao original excepto o banner de erro ──────────────────
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 transition-colors duration-500">
+      {/* Blobs decorativos */}
       <div
         className="pointer-events-none fixed inset-0 overflow-hidden"
         aria-hidden="true"
@@ -105,6 +109,7 @@ export const Login: React.FC = () => {
         </CardHeader>
 
         <CardContent className="space-y-5 px-5 sm:px-8 pb-8">
+          {/* Selector de role */}
           <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl">
             <RoleButton
               active={activeRole === 'donor'}
@@ -140,6 +145,7 @@ export const Login: React.FC = () => {
               </div>
             )}
 
+            {/* Email */}
             <FormField
               label="E-mail"
               error={errors.email?.message}
@@ -150,7 +156,9 @@ export const Login: React.FC = () => {
                     'absolute left-4 top-1/2 -translate-y-1/2 text-xl transition-colors',
                     errors.email
                       ? 'text-red-500'
-                      : 'text-slate-400 group-focus-within:text-primary'
+                      : activeRole === 'hospital'
+                        ? 'text-slate-400 group-focus-within:text-blue-500'
+                        : 'text-slate-400 group-focus-within:text-primary'
                   )}
                   aria-hidden="true"
                 />
@@ -165,7 +173,9 @@ export const Login: React.FC = () => {
                   'w-full bg-slate-50 dark:bg-slate-800 border-2 rounded-2xl py-3.5 sm:py-4 pl-12 pr-4 outline-none transition-all font-medium text-slate-900 dark:text-white text-sm sm:text-base placeholder:text-slate-400',
                   errors.email
                     ? 'border-red-200 dark:border-red-900/50 focus:border-red-500'
-                    : 'border-transparent focus:border-primary/30 focus:bg-white dark:focus:bg-slate-900'
+                    : activeRole === 'hospital'
+                      ? 'border-transparent focus:border-blue-400/40 focus:bg-white dark:focus:bg-slate-900'
+                      : 'border-transparent focus:border-primary/30 focus:bg-white dark:focus:bg-slate-900'
                 )}
                 placeholder="nome@exemplo.com"
                 aria-describedby={
@@ -175,6 +185,7 @@ export const Login: React.FC = () => {
               />
             </FormField>
 
+            {/* Senha */}
             <FormField
               label="Senha"
               error={errors.senha?.message}
@@ -185,7 +196,9 @@ export const Login: React.FC = () => {
                     'absolute left-4 top-1/2 -translate-y-1/2 text-xl transition-colors',
                     errors.senha
                       ? 'text-red-500'
-                      : 'text-slate-400 group-focus-within:text-primary'
+                      : activeRole === 'hospital'
+                        ? 'text-slate-400 group-focus-within:text-blue-500'
+                        : 'text-slate-400 group-focus-within:text-primary'
                   )}
                   aria-hidden="true"
                 />
@@ -200,7 +213,9 @@ export const Login: React.FC = () => {
                   'w-full bg-slate-50 dark:bg-slate-800 border-2 rounded-2xl py-3.5 sm:py-4 pl-12 pr-4 outline-none transition-all font-medium text-slate-900 dark:text-white text-sm sm:text-base placeholder:text-slate-400',
                   errors.senha
                     ? 'border-red-200 dark:border-red-900/50 focus:border-red-500'
-                    : 'border-transparent focus:border-primary/30 focus:bg-white dark:focus:bg-slate-900'
+                    : activeRole === 'hospital'
+                      ? 'border-transparent focus:border-blue-400/40 focus:bg-white dark:focus:bg-slate-900'
+                      : 'border-transparent focus:border-primary/30 focus:bg-white dark:focus:bg-slate-900'
                 )}
                 placeholder="••••••••"
                 aria-describedby={
@@ -210,6 +225,7 @@ export const Login: React.FC = () => {
               />
             </FormField>
 
+            {/* Botão */}
             <Button
               type="submit"
               className={cn(
@@ -248,7 +264,23 @@ export const Login: React.FC = () => {
   );
 };
 
-// Sub-componentes iguais ao original
+/* ─── Utilitário de erros Axios ──────────────────────────────────────────── */
+
+function resolveAxiosError(err: unknown): string {
+  if (axios.isAxiosError(err)) {
+    const status = err.response?.status;
+    if (status === 401) return 'Email ou senha incorrectos. Tente novamente.';
+    if (status === 404) return 'Conta não encontrada. Verifique o email.';
+    if (status === 403) return 'Conta desactivada. Contacte o suporte.';
+    if (!err.response)
+      return 'Sem ligação ao servidor. Verifique a sua internet.';
+    return 'Ocorreu um erro. Tente novamente mais tarde.';
+  }
+  return 'Erro inesperado. Tente novamente.';
+}
+
+/* ─── Sub-componentes ────────────────────────────────────────────────────── */
+
 interface RoleButtonProps {
   active: boolean;
   onClick: () => void;

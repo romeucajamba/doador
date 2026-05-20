@@ -45,3 +45,52 @@ export type CreateAgendaInput = {
   hora_agendada: string; // HH:MM      — o backend transforma em Date
   observacao_doador?: string;
 };
+
+// ── Tipos ────────────────────────────────────────────────────────────────────
+export interface RegisterHospitalPayload {
+  nome: string;
+  nif: string;
+  id_provincia: number;
+  id_municipio: number;
+  endereco: string;
+  telefone: string;
+  email: string;
+  senha: string;
+}
+
+export interface RegisterHospitalResponse {
+  access_token: string;
+  token_type: string;
+  hospital: {
+    id: number;
+    nome: string;
+    email: string;
+    id_municipio: number;
+  };
+}
+
+//Login
+export interface HospitalLoginPayload {
+  email: string;
+  senha: string;
+}
+
+export interface HospitalUser {
+  id_hospital: number;
+  nome: string;
+  nif: string;
+  id_municipio: number;
+  endereco: string;
+  telefone: string;
+  email: string;
+  data_cadastro: string;
+  status: string;
+}
+
+export interface HospitalLoginResponse {
+  message: string;
+  user: HospitalUser;
+  token: string;
+}
+
+export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'O+' | 'O-' | 'AB+' | 'AB-';

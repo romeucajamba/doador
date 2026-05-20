@@ -149,21 +149,12 @@ export const DonorDashboard: React.FC = () => {
               </div>
             </div>
 
-            <Button
-              onClick={handleSchedule}
-              disabled={isScheduling}
-              className="w-full sm:w-auto px-6 py-5 sm:py-4 bg-primary font-bold text-sm rounded-xl shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              {isScheduling ? (
-                <>
-                  <SchedulingDots /> A agendar...
-                </>
-              ) : (
-                <>
-                  Agendar Doação <MdArrowForward className="text-base" />
-                </>
-              )}
-            </Button>
+            <div className="w-full sm:w-auto px-6 py-5 sm:py-4 bg-primary font-bold text-sm rounded-xl shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-white">
+              <span>
+                A agende a sua doação na área de centros dê o teu exemplo e seja
+                um herói.
+              </span>
+            </div>
           </CardContent>
         </Card>
 

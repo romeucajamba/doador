@@ -13,7 +13,7 @@ import {
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { BloodType } from '@/lib/types';
+import { BloodType } from '@/lib/hospital';
 import { cn } from '@/lib/utils';
 
 type DonorStatus = 'Ready' | 'Waiting';

@@ -26,9 +26,6 @@ export const DonorLayout = ({ children }: DonorLayoutProps) => {
       <aside className="hidden md:flex w-64 flex-col bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 sticky top-0 h-screen">
         <div className="p-6 text-center">
           <h1 className="text-xl font-black text-primary flex items-center justify-center gap-2">
-            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
-              B+
-            </div>
             BLOOD HUB
           </h1>
         </div>
@@ -54,7 +51,9 @@ export const DonorLayout = ({ children }: DonorLayoutProps) => {
 
         <div className="p-4 border-t border-gray-100 dark:border-slate-800 space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold"></div>
+            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">
+              {user?.nome_completo}
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-dark-text dark:text-white truncate">
                 {user?.nome_completo || ''}
