@@ -35,3 +35,27 @@ export const BLOOD_TYPES: { label: string; value: TipoSanguineo }[] = [
   { label: 'AB+', value: 'AB_POS' },
   { label: 'AB-', value: 'AB_NEG' },
 ];
+
+// ── Mapeamento visual: enum do backend → label legível ────────────────────────
+
+export const TIPO_LABEL: Record<TipoSanguineo, string> = {
+  A_POS: 'A+',
+  A_NEG: 'A−',
+  B_POS: 'B+',
+  B_NEG: 'B−',
+  O_POS: 'O+',
+  O_NEG: 'O−',
+  AB_POS: 'AB+',
+  AB_NEG: 'AB−',
+};
+
+export const ALL_TYPES: TipoSanguineo[] = [
+  'A_POS',
+  'A_NEG',
+  'B_POS',
+  'B_NEG',
+  'O_POS',
+  'O_NEG',
+  'AB_POS',
+  'AB_NEG',
+];

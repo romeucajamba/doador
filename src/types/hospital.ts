@@ -94,3 +94,37 @@ export interface HospitalLoginResponse {
 }
 
 export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'O+' | 'O-' | 'AB+' | 'AB-';
+
+// ── Stock ─────────────────────────────────────────
+
+export type TipoSanguineo =
+  | 'A_POS'
+  | 'A_NEG'
+  | 'B_POS'
+  | 'B_NEG'
+  | 'O_POS'
+  | 'O_NEG'
+  | 'AB_POS'
+  | 'AB_NEG';
+
+export interface StockItem {
+  id_stock: number;
+  id_hospital: number;
+  tipo_sanguineo: TipoSanguineo;
+  quantidade_bolsas: number;
+  ultima_atualizacao: string;
+}
+
+export interface MovimentoPayload {
+  id_stock: number;
+  quantidade: number; // positivo = entrada, negativo = consumo
+  observacao?: string;
+}
+
+export interface MovimentoResponse {
+  id_movimento: number;
+  id_stock: number;
+  quantidade: number;
+  observacao: string | null;
+  data_movimento: string;
+}
