@@ -142,7 +142,7 @@ export const useAddStock = (id_hospital: number | undefined) => {
   >({
     mutationFn: async ({ id_stock, quantidade = 1 }) => {
       const res = await api.put(`/stock/${id_stock}`, {
-        quantidade_bolsas: quantidade, // positivo → adição
+        quantidade_bolsas: quantidade,
       });
 
       return res.data;
