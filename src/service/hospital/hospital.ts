@@ -135,19 +135,24 @@ export const useAddStock = (id_hospital: number | undefined) => {
   return useMutation<
     MovimentoResponse,
     Error,
-    { id_stock: number; quantidade?: number; observacao?: string }
+    {
+      id_stock: number;
+      quantidade?: number;
+    }
   >({
-    mutationFn: async ({ id_stock, quantidade = 1, observacao }) => {
-      const res = await api.post('/stock/movimento', {
-        id_stock,
-        quantidade, // positivo → entrada
-        observacao,
+    mutationFn: async ({ id_stock, quantidade = 1 }) => {
+      const res = await api.put(`/stock/${id_stock}`, {
+        quantidade_bolsas: quantidade, // positivo → adição
       });
+
       return res.data;
     },
+
     onSuccess: () => {
       if (id_hospital) {
-        qc.invalidateQueries({ queryKey: stockQueryKey(id_hospital) });
+        qc.invalidateQueries({
+          queryKey: stockQueryKey(id_hospital),
+        });
       }
     },
   });
@@ -164,11 +169,9 @@ export const useDecrementStock = (id_hospital: number | undefined) => {
     Error,
     { id_stock: number; observacao?: string }
   >({
-    mutationFn: async ({ id_stock, observacao }) => {
-      const res = await api.post('/stock/movimento', {
-        id_stock,
-        quantidade: -1, // negativo → consumo
-        observacao,
+    mutationFn: async ({ id_stock }) => {
+      const res = await api.patch(`/stock/${id_stock}`, {
+        quantidade_bolsas: 1, // negativo → consumo
       });
       return res.data;
     },
