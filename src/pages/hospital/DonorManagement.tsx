@@ -50,7 +50,6 @@ interface PedidoDoacao {
 }
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
-
 const pedidosQueryKey = (id_hospital: number) =>
   ['pedidos-doacao', id_hospital] as const;
 
@@ -59,19 +58,52 @@ const usePedidosDoacao = (id_hospital: number | undefined) =>
     queryKey: id_hospital
       ? pedidosQueryKey(id_hospital)
       : ['pedidos-doacao-none'],
+
     queryFn: async () => {
       const { data } = await api.get(`/pedido/doacao/hospital/${id_hospital}`);
+
       return Array.isArray(data) ? data : [];
     },
+
     enabled: !!id_hospital,
   });
+// ─── Notificação (fire-and-forget) ───────────────────────────────────────────
+
+type StatusNotificacao = 'sucesso' | 'falha';
+
+const sendNotificacao = async (payload: {
+  id_pedido: number;
+  id_doador: number;
+  mensagem_enviada: string;
+  status_envio: StatusNotificacao;
+  codigo_erro?: string;
+}): Promise<void> => {
+  try {
+    await api.post('/comunicacao/notificacao', payload);
+  } catch {
+    // falha silenciosa — não bloqueia o fluxo principal
+  }
+};
+
+const buildMensagem = (
+  status: 'aceite' | 'rejeitado',
+  nomeDoador: string
+): string =>
+  status === 'aceite'
+    ? `Olá ${nomeDoador}, a sua candidatura como doador foi aceite. Obrigado pelo interesse em salvar vidas!`
+    : `Olá ${nomeDoador}, infelizmente a sua candidatura como doador não foi aceite neste momento. Obrigado pelo interesse.`;
 
 const useAnswerDoacao = (id_hospital: number | undefined) => {
   const qc = useQueryClient();
   return useMutation<
     PedidoDoacao,
     Error,
-    { id_pedido: number; status: 'aceite' | 'rejeitado' }
+    {
+      id_pedido: number;
+      id_doador: number;
+      nome_doador: string;
+      status: 'aceite' | 'rejeitado';
+    }
   >({
     mutationFn: async ({ id_pedido, status }) => {
       const { data } = await api.put(`/pedido/doacao/${id_pedido}/answer`, {
@@ -79,9 +111,24 @@ const useAnswerDoacao = (id_hospital: number | undefined) => {
       });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, { id_pedido, id_doador, nome_doador, status }) => {
       if (id_hospital)
         qc.invalidateQueries({ queryKey: pedidosQueryKey(id_hospital) });
+      sendNotificacao({
+        id_pedido,
+        id_doador,
+        mensagem_enviada: buildMensagem(status, nome_doador),
+        status_envio: 'sucesso',
+      });
+    },
+    onError: (_, { id_pedido, id_doador, nome_doador, status }) => {
+      sendNotificacao({
+        id_pedido,
+        id_doador,
+        mensagem_enviada: buildMensagem(status, nome_doador),
+        status_envio: 'falha',
+        codigo_erro: 'ANSWER_REQUEST_FAILED',
+      });
     },
   });
 };
@@ -197,10 +244,15 @@ export const DonorManagement: React.FC = () => {
   const aceites = pedidos.filter((p) => p.status === 'aceite').length;
   const rejeitados = pedidos.filter((p) => p.status === 'rejeitado').length;
 
-  const handleAnswer = (id_pedido: number, status: 'aceite' | 'rejeitado') => {
+  const handleAnswer = (
+    id_pedido: number,
+    id_doador: number,
+    nome_doador: string,
+    status: 'aceite' | 'rejeitado'
+  ) => {
     setLoadingId(id_pedido);
     answerDoacao(
-      { id_pedido, status },
+      { id_pedido, id_doador, nome_doador, status },
       {
         onSuccess: () => {
           showToast(
@@ -356,7 +408,10 @@ export const DonorManagement: React.FC = () => {
       {isError && !isLoading && (
         <div className="py-14 text-center bg-white dark:bg-slate-900 rounded-2xl border border-red-100 dark:border-red-900/30 shadow-sm">
           <p className="text-slate-900 dark:text-white font-bold text-sm">
-            Nenhum pedido encontrado
+            Erro ao carregar pedidos
+          </p>
+          <p className="text-slate-400 text-xs mt-1">
+            Verifica a tua ligação e tenta novamente.
           </p>
         </div>
       )}
@@ -492,7 +547,12 @@ export const DonorManagement: React.FC = () => {
                     <div className="flex gap-2 pt-1">
                       <Button
                         onClick={() =>
-                          handleAnswer(pedido.id_pedido_doacao, 'aceite')
+                          handleAnswer(
+                            pedido.id_pedido_doacao,
+                            doador.id_doador,
+                            doador.nome_completo,
+                            'aceite'
+                          )
                         }
                         disabled={isLoading || isAnswering}
                         className="flex-1 h-9 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0"
@@ -502,7 +562,12 @@ export const DonorManagement: React.FC = () => {
                       <Button
                         variant="destructive"
                         onClick={() =>
-                          handleAnswer(pedido.id_pedido_doacao, 'rejeitado')
+                          handleAnswer(
+                            pedido.id_pedido_doacao,
+                            doador.id_doador,
+                            doador.nome_completo,
+                            'rejeitado'
+                          )
                         }
                         disabled={isLoading || isAnswering}
                         className="flex-1 h-9 rounded-xl text-xs font-bold"
