@@ -124,6 +124,27 @@ export const useStockMovimento = (id_hospital: number | undefined) => {
   });
 };
 
+// hospital.ts — novo hook para criar stock
+export const useCreateStock = (id_hospital: number | undefined) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: {
+      id_hospital: number;
+      tipo_sanguineo: string;
+      quantidade_bolsas: number;
+    }) => {
+      const { data } = await api.post('/stock', payload);
+      return data;
+    },
+    onSuccess: () => {
+      if (id_hospital) {
+        qc.invalidateQueries({ queryKey: stockQueryKey(id_hospital) });
+      }
+    },
+  });
+};
+
 // ─── useAddStock ──────────────────────────────────────────────────────────────
 // Adiciona 1 bolsa (ou N bolsas) a um tipo sanguíneo já existente no stock.
 // Para criar um novo tipo o backend deve ter a sua própria rota de criação;

@@ -9,6 +9,7 @@ import {
   useHospitalStock,
   useAddStock,
   useDecrementStock,
+  useCreateStock,
 } from '@/service/hospital/hospital';
 import { TipoSanguineo, StockItem } from '@/types/hospital';
 import { TIPO_LABEL, ALL_TYPES } from '@/constants/index';
@@ -25,6 +26,8 @@ export const StockManagement = () => {
   const { mutate: addStock, isPending: isAdding } = useAddStock(id_hospital);
   const { mutate: decrementStock, isPending: isDecrementing } =
     useDecrementStock(id_hospital);
+  const { mutate: createStock, isPending: isCreating } =
+    useCreateStock(id_hospital);
 
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -39,17 +42,20 @@ export const StockManagement = () => {
   // a tua rota de criação se for diferente.
   const handleAdd = (tipo: TipoSanguineo) => {
     if (!id_hospital) return;
-    // Encontra o item existente pelo tipo (caso já exista no stock mas com 0 bolsas)
+
     const existing = stock.find((s) => s.tipo_sanguineo === tipo);
+
     if (existing) {
       addStock(
         { id_stock: existing.id_stock, quantidade: 1 },
         { onSuccess: () => setShowAddModal(false) }
       );
+    } else {
+      createStock(
+        { id_hospital, tipo_sanguineo: tipo, quantidade_bolsas: 1 },
+        { onSuccess: () => setShowAddModal(false) }
+      );
     }
-    // Se o tipo ainda não existe, a lógica de criação depende do teu backend.
-    // Normalmente seria uma rota POST /stock separada para criar o tipo.
-    // Depois de criado, o invalidateQueries no onSuccess vai actualizar a lista.
   };
 
   const handleDecrement = (item: StockItem) => {
