@@ -124,7 +124,12 @@ export const Profile: React.FC = () => {
                 Cancelar
               </Button>
 
-              <Button onClick={handleSubmit(onSubmit)} disabled={isSaving}>
+              <Button
+                onClick={handleSubmit(onSubmit, (errors) => {
+                  console.log('Erros de validação:', errors); // ← vai mostrar o que está a falhar
+                })}
+                disabled={isSaving}
+              >
                 {isSaving ? 'A guardar...' : 'Guardar'}
               </Button>
             </>
