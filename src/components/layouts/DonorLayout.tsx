@@ -51,15 +51,9 @@ export const DonorLayout = ({ children }: DonorLayoutProps) => {
 
         <div className="p-4 border-t border-gray-100 dark:border-slate-800 space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">
-              {user?.nome_completo}
-            </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-dark-text dark:text-white truncate">
                 {user?.nome_completo || ''}
-              </p>
-              <p className="text-[10px] text-neutral-text font-bold uppercase tracking-widest">
-                {user?.tipo_sanguineo || ''}
               </p>
             </div>
           </div>

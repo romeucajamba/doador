@@ -6,16 +6,12 @@ import {
   MdHistory,
   MdVerified,
   MdCheckCircle,
-  MdArrowForward,
 } from 'react-icons/md';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { useAppointmentStore } from '@/stores/useAppointmentStore';
 import { cn } from '@/lib/utils';
 import { useGamificationStatus } from '@/service/donor/gami';
 import { useAuthStore } from '@/hooks/auth';
-import { GamificationStatus } from '@/types/donar';
 import { useDonorAppointments } from '@/service/donor/gender';
 
 type ImpactCardProps = {
@@ -100,11 +96,6 @@ export const DonorDashboard: React.FC = () => {
           </h1>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <div className="size-9 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-            <span className="text-primary font-black text-sm">
-              {user?.tipo_sanguineo}
-            </span>
-          </div>
           <div>
             <p className="text-xs font-black text-slate-900 dark:text-white">
               pontuação: {stats?.pontuacao ?? 0}
@@ -140,11 +131,8 @@ export const DonorDashboard: React.FC = () => {
                   Elegível para doar
                 </p>
                 <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mt-0.5">
-                  O seu sangue{' '}
-                  <strong className="font-black text-primary">
-                    {user?.tipo_sanguineo}
-                  </strong>{' '}
-                  está em alta demanda em Luanda. Pode salvar até 3 vidas.
+                  O seu sangue é um bem precioso e é muito importante salvar
+                  vidas. Podes salvar até 3 vidas.
                 </p>
               </div>
             </div>
@@ -283,7 +271,8 @@ export const DonorDashboard: React.FC = () => {
                         {apt.hospital.nome}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
-                        {apt.data_agendada} · {apt.hospital.status}
+                        {new Date(apt.data_agendada).toLocaleDateString()} ·{' '}
+                        {apt.hospital.status}
                       </p>
                     </div>
                     <Badge

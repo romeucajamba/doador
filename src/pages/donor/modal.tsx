@@ -52,6 +52,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const onSubmit = (values: FormValues) => {
     if (!user?.id_doador) return;
 
+    console.log(values.hora_agendada);
+
     const payload: CreateAgendaInput = {
       id_doador: user.id_doador,
       id_hospital: hospital.id_hospital,
