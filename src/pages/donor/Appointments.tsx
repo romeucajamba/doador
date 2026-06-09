@@ -17,6 +17,7 @@ import { useDonorAppointments } from '@/service/donor/gender';
 import { useAuthStore } from '@/hooks/auth';
 import { Appointment } from '@/types/donar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TIPO_LABEL } from '@/constants';
 
 type AppointmentStatus = 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
 
@@ -279,7 +280,7 @@ export const Appointments: React.FC = () => {
                         </h3>
                         <p className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-xs font-medium">
                           <MdAccessTime className="text-sm shrink-0" />
-                          {apt.data_agendada} · {apt.hora_agendada}
+                          {new Date(apt.data_agendada).toLocaleDateString()}
                         </p>
                       </div>
                       <Badge
@@ -296,7 +297,9 @@ export const Appointments: React.FC = () => {
                     <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
                       <div className="size-9 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-600 shrink-0">
                         <span className="text-primary font-black text-xs">
-                          {apt.doador.tipo_sanguineo}
+                          {TIPO_LABEL[apt.doador.tipo_sanguineo ?? ''] ??
+                            user.tipo_sanguineo ??
+                            '-'}
                         </span>
                       </div>
                       <div className="min-w-0">
@@ -419,13 +422,17 @@ export const Appointments: React.FC = () => {
                       {
                         icon: <MdCalendarMonth className="text-blue-500" />,
                         label: 'Data',
-                        value: selectedAppointment.data_agendada,
+                        value: new Date(
+                          selectedAppointment.data_agendada
+                        ).toLocaleDateString(),
                         bg: 'bg-blue-50 dark:bg-blue-950',
                       },
                       {
                         icon: <MdAccessTime className="text-emerald-500" />,
                         label: 'Horário',
-                        value: selectedAppointment.hora_agendada,
+                        value: new Date(
+                          selectedAppointment.hora_agendada
+                        ).toLocaleTimeString(),
                         bg: 'bg-emerald-50 dark:bg-emerald-950',
                       },
                     ].map(({ icon, label, value, bg }) => (
