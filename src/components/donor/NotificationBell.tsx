@@ -5,6 +5,7 @@ import {
   MdInfo,
   MdWarning,
   MdError,
+  MdClose,
 } from 'react-icons/md';
 import {
   useNotificationStore,
@@ -61,14 +62,23 @@ export const NotificationBell = () => {
               <h3 className="font-black text-dark-text dark:text-white uppercase tracking-widest text-xs">
                 Notifications
               </h3>
-              {unreadCount > 0 && (
+              <div className="flex items-center gap-2">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={markAllAsRead}
+                    className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter"
+                  >
+                    Mark all as read
+                  </button>
+                )}
+                {/* Botão fechar */}
                 <button
-                  onClick={markAllAsRead}
-                  className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter"
+                  onClick={() => setIsOpen(false)}
+                  className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-neutral-text dark:text-gray-400"
                 >
-                  Mark all as read
+                  <MdClose className="text-base" />
                 </button>
-              )}
+              </div>
             </div>
 
             <div className="max-h-[400px] overflow-y-auto">

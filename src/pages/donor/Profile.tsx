@@ -126,7 +126,7 @@ export const Profile: React.FC = () => {
 
               <Button
                 onClick={handleSubmit(onSubmit, (errors) => {
-                  console.log('Erros de validação:', errors); // ← vai mostrar o que está a falhar
+                  console.log('Erros de validação:', errors);
                 })}
                 disabled={isSaving}
               >
@@ -195,7 +195,7 @@ export const Profile: React.FC = () => {
               <Field
                 label="Email"
                 icon={<MdEmail />}
-                disabled
+                disabled={!isEditing}
                 {...register('email')}
               />
 
@@ -216,7 +216,7 @@ export const Profile: React.FC = () => {
                 >
                   {BLOOD_TYPES.map((b) => (
                     <option key={b.label} value={b.value}>
-                      {b.value}
+                      {b.label}
                     </option>
                   ))}
                 </select>
