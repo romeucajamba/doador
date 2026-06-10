@@ -22,8 +22,8 @@ import { api } from '@/utils/axios';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type PedidoStatus = 'pendente' | 'aceite' | 'rejeitado';
-type FilterStatus = 'all' | PedidoStatus;
+type PedidoStatus = 'pendente' | 'aceite' | 'rejeitado' | 'confirmada';
+type FilterStatus = 'all' | 'pendente' | 'aceite' | 'rejeitado';
 
 interface Doador {
   id_doador: number;
@@ -51,6 +51,12 @@ interface Agenda {
   doador: Doador;
 }
 
+// ─── Status helpers ───────────────────────────────────────────────────────────
+
+const isAceite = (s: string) => s === 'aceite' || s === 'confirmada';
+const isRejeitado = (s: string) => s === 'rejeitado';
+const isPendenteStatus = (s: string) => s === 'pendente';
+
 // ─── API helpers ──────────────────────────────────────────────────────────────
 
 const agendaQueryKey = (id_hospital: number) =>
@@ -63,17 +69,13 @@ const useAgendaHospital = (id_hospital: number | undefined) =>
       : ['agenda-hospital-none'],
     queryFn: async () => {
       const { data } = await api.get(`/agenda/hospital/${id_hospital}`);
-      console.log('Agendas recebidas:', data);
-
       return Array.isArray(data) ? data : [];
     },
     enabled: !!id_hospital,
   });
 
-// __________ confirmar agenda (aceitar/rejeitar) __________
 const useProcessAgenda = (id_hospital: number | undefined) => {
   const qc = useQueryClient();
-
   return useMutation({
     mutationFn: async ({
       id_agenda,
@@ -82,22 +84,14 @@ const useProcessAgenda = (id_hospital: number | undefined) => {
       id_agenda: number;
       status: 'confirmada' | 'rejeitado';
     }) => {
-      await api.put(`/agenda/${id_agenda}/process`, {
-        status,
-      });
+      await api.put(`/agenda/${id_agenda}/process`, { status });
     },
-
     onSuccess: () => {
-      if (id_hospital) {
-        qc.invalidateQueries({
-          queryKey: ['agenda-hospital', id_hospital],
-        });
-      }
+      if (id_hospital)
+        qc.invalidateQueries({ queryKey: agendaQueryKey(id_hospital) });
     },
   });
 };
-
-// ─── Buscar id_pedido_doacao pelo id_doador ───────────────────────────────────
 
 const getPedidoIdByDoador = async (id_doador: number): Promise<number> => {
   const { data } = await api.get(`/pedido/doacao/${id_doador}`);
@@ -223,6 +217,11 @@ const statusBadge: Record<PedidoStatus, { label: string; className: string }> =
       className:
         'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/40',
     },
+    confirmada: {
+      label: 'Confirmada',
+      className:
+        'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/40',
+    },
     rejeitado: {
       label: 'Rejeitado',
       className:
@@ -257,8 +256,7 @@ export const DonorManagement: React.FC = () => {
   const { mutate: answerDoacao, isPending: isAnswering } =
     useAnswerDoacao(id_hospital);
 
-  const { mutate: processAgenda, isPending: isProcessing } =
-    useProcessAgenda(id_hospital);
+  const { mutate: processAgenda } = useProcessAgenda(id_hospital);
   const { toast, show: showToast } = useToast();
 
   const [search, setSearch] = useState('');
@@ -279,20 +277,23 @@ export const DonorManagement: React.FC = () => {
           a.doador.email.toLowerCase().includes(q) ||
           formatBloodType(a.doador.tipo_sanguineo).toLowerCase().includes(q);
         const matchStatus =
-          filterStatus === 'all' || statusAtual === filterStatus;
+          filterStatus === 'all' ||
+          (filterStatus === 'aceite' && isAceite(statusAtual)) ||
+          (filterStatus === 'rejeitado' && isRejeitado(statusAtual)) ||
+          (filterStatus === 'pendente' && isPendenteStatus(statusAtual));
         return matchSearch && matchStatus;
       }),
     [agendas, search, filterStatus, localStatus]
   );
 
-  const pendentes = agendas.filter(
-    (a) => (localStatus[a.id_agenda] ?? a.status) === 'pendente'
+  const pendentes = agendas.filter((a) =>
+    isPendenteStatus(localStatus[a.id_agenda] ?? a.status)
   ).length;
-  const aceites = agendas.filter(
-    (a) => (localStatus[a.id_agenda] ?? a.status) === 'aceite'
+  const aceites = agendas.filter((a) =>
+    isAceite(localStatus[a.id_agenda] ?? a.status)
   ).length;
-  const rejeitados = agendas.filter(
-    (a) => (localStatus[a.id_agenda] ?? a.status) === 'rejeitado'
+  const rejeitados = agendas.filter((a) =>
+    isRejeitado(localStatus[a.id_agenda] ?? a.status)
   ).length;
 
   const handleAnswer = async (
@@ -325,28 +326,10 @@ export const DonorManagement: React.FC = () => {
         }
       );
 
-      processAgenda(
-        {
-          id_agenda,
-          status: status === 'aceite' ? 'confirmada' : 'rejeitado',
-        },
-        {
-          onSuccess: () => {
-            setLocalStatus((prev) => ({ ...prev, [id_agenda]: status }));
-            showToast(
-              status === 'aceite'
-                ? 'Pedido de doação aceite.'
-                : 'Pedido rejeitado.',
-              status === 'aceite' ? 'success' : 'error'
-            );
-            setLoadingId(null);
-          },
-          onError: () => {
-            showToast('Erro ao responder ao pedido.', 'error');
-            setLoadingId(null);
-          },
-        }
-      );
+      processAgenda({
+        id_agenda,
+        status: status === 'aceite' ? 'confirmada' : 'rejeitado',
+      });
     } catch {
       showToast('Erro ao buscar pedido do doador.', 'error');
       setLoadingId(null);
@@ -536,8 +519,8 @@ export const DonorManagement: React.FC = () => {
             const bloodType = formatBloodType(doador.tipo_sanguineo);
             const isCardLoading = loadingId === agenda.id_agenda;
             const statusAtual = localStatus[agenda.id_agenda] ?? agenda.status;
-            const sc = statusBadge[statusAtual];
-            const isPendente = statusAtual === 'pendente';
+            const sc = statusBadge[statusAtual] ?? statusBadge['pendente'];
+            const isPendente = isPendenteStatus(statusAtual);
 
             return (
               <Card
@@ -566,7 +549,6 @@ export const DonorManagement: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    {/* Tipo sanguíneo */}
                     <div className="size-11 bg-blue-50 dark:bg-blue-950/40 rounded-xl flex flex-col items-center justify-center text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/40 shrink-0">
                       <span className="text-sm font-black leading-none">
                         {bloodType}
@@ -608,9 +590,17 @@ export const DonorManagement: React.FC = () => {
                         {formatDate(agenda.data_agendada)}
                       </p>
                     </div>
+                    <Badge
+                      className={cn(
+                        'text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-lg border',
+                        sc.className
+                      )}
+                    >
+                      {sc.label}
+                    </Badge>
                   </div>
 
-                  {/* Data atualização (se respondido) */}
+                  {/* Data atualização */}
                   {!isPendente && (
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center">
                       Atualizado em {formatDate(agenda.data_atualizacao)}
@@ -654,12 +644,12 @@ export const DonorManagement: React.FC = () => {
                     <div
                       className={cn(
                         'flex items-center justify-center h-9 rounded-xl border text-xs font-bold',
-                        statusAtual === 'aceite'
+                        isAceite(statusAtual)
                           ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-300'
                           : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-300'
                       )}
                     >
-                      {statusAtual === 'aceite'
+                      {isAceite(statusAtual)
                         ? '✅ Doação aceite'
                         : '✕ Pedido rejeitado'}
                     </div>
