@@ -37,36 +37,77 @@ interface Doador {
   consentimento_sms: boolean;
 }
 
-interface PedidoDoacao {
-  id_pedido_doacao: number;
+interface Agenda {
+  id_agenda: number;
   id_doador: number;
   id_hospital: number;
-  mensagem: string;
+  data_agendada: string;
+  hora_agendada: string;
   status: PedidoStatus;
-  motivo_rejeicao: string | null;
-  data_solicitacao: string;
-  data_resposta: string | null;
+  observacao_doador: string | null;
+  observacao_hospital: string | null;
+  data_criacao: string;
+  data_atualizacao: string;
   doador: Doador;
 }
 
 // ─── API helpers ──────────────────────────────────────────────────────────────
-const pedidosQueryKey = (id_hospital: number) =>
-  ['pedidos-doacao', id_hospital] as const;
 
-const usePedidosDoacao = (id_hospital: number | undefined) =>
-  useQuery<PedidoDoacao[]>({
+const agendaQueryKey = (id_hospital: number) =>
+  ['agenda-hospital', id_hospital] as const;
+
+const useAgendaHospital = (id_hospital: number | undefined) =>
+  useQuery<Agenda[]>({
     queryKey: id_hospital
-      ? pedidosQueryKey(id_hospital)
-      : ['pedidos-doacao-none'],
-
+      ? agendaQueryKey(id_hospital)
+      : ['agenda-hospital-none'],
     queryFn: async () => {
-      const { data } = await api.get(`/pedido/doacao/hospital/${id_hospital}`);
+      const { data } = await api.get(`/agenda/hospital/${id_hospital}`);
+      console.log('Agendas recebidas:', data);
 
       return Array.isArray(data) ? data : [];
     },
-
     enabled: !!id_hospital,
   });
+
+// __________ confirmar agenda (aceitar/rejeitar) __________
+const useProcessAgenda = (id_hospital: number | undefined) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id_agenda,
+      status,
+    }: {
+      id_agenda: number;
+      status: 'confirmada' | 'rejeitado';
+    }) => {
+      await api.put(`/agenda/${id_agenda}/process`, {
+        status,
+      });
+    },
+
+    onSuccess: () => {
+      if (id_hospital) {
+        qc.invalidateQueries({
+          queryKey: ['agenda-hospital', id_hospital],
+        });
+      }
+    },
+  });
+};
+
+// ─── Buscar id_pedido_doacao pelo id_doador ───────────────────────────────────
+
+const getPedidoIdByDoador = async (id_doador: number): Promise<number> => {
+  const { data } = await api.get(`/pedido/doacao/${id_doador}`);
+  const pedidos = Array.isArray(data) ? data : [data];
+  if (!pedidos.length) throw new Error('Nenhum pedido encontrado');
+  const pedidoPendente =
+    pedidos.find((p: any) => p.status === 'pendente') ?? pedidos[0];
+  return pedidoPendente.id_pedido_doacao;
+};
+
 // ─── Notificação (fire-and-forget) ───────────────────────────────────────────
 
 type StatusNotificacao = 'sucesso' | 'falha';
@@ -81,7 +122,7 @@ const sendNotificacao = async (payload: {
   try {
     await api.post('/comunicacao/notificacao', payload);
   } catch {
-    // falha silenciosa — não bloqueia o fluxo principal
+    console.error('Erro ao enviar notificação para o doador', payload);
   }
 };
 
@@ -96,7 +137,7 @@ const buildMensagem = (
 const useAnswerDoacao = (id_hospital: number | undefined) => {
   const qc = useQueryClient();
   return useMutation<
-    PedidoDoacao,
+    void,
     Error,
     {
       id_pedido: number;
@@ -106,14 +147,11 @@ const useAnswerDoacao = (id_hospital: number | undefined) => {
     }
   >({
     mutationFn: async ({ id_pedido, status }) => {
-      const { data } = await api.put(`/pedido/doacao/${id_pedido}/answer`, {
-        status,
-      });
-      return data;
+      await api.put(`/pedido/doacao/${id_pedido}/answer`, { status });
     },
     onSuccess: (_, { id_pedido, id_doador, nome_doador, status }) => {
       if (id_hospital)
-        qc.invalidateQueries({ queryKey: pedidosQueryKey(id_hospital) });
+        qc.invalidateQueries({ queryKey: agendaQueryKey(id_hospital) });
       sendNotificacao({
         id_pedido,
         id_doador,
@@ -135,7 +173,6 @@ const useAnswerDoacao = (id_hospital: number | undefined) => {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-// Converte "B_POS" → "B+" , "AB_NEG" → "AB-", etc.
 const formatBloodType = (raw: string): string =>
   raw.replace('_POS', '+').replace('_NEG', '-').replace('_', '');
 
@@ -213,62 +250,107 @@ export const DonorManagement: React.FC = () => {
   const id_hospital = user?.id_hospital;
 
   const {
-    data: pedidos = [],
+    data: agendas = [],
     isLoading,
     isError,
-  } = usePedidosDoacao(id_hospital);
+  } = useAgendaHospital(id_hospital);
   const { mutate: answerDoacao, isPending: isAnswering } =
     useAnswerDoacao(id_hospital);
+
+  const { mutate: processAgenda, isPending: isProcessing } =
+    useProcessAgenda(id_hospital);
   const { toast, show: showToast } = useToast();
 
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [loadingId, setLoadingId] = useState<number | null>(null);
+  const [localStatus, setLocalStatus] = useState<Record<number, PedidoStatus>>(
+    {}
+  );
 
   const filtered = useMemo(
     () =>
-      pedidos.filter((p) => {
+      agendas.filter((a) => {
         const q = search.toLowerCase();
+        const statusAtual = localStatus[a.id_agenda] ?? a.status;
         const matchSearch =
           !q ||
-          p.doador.nome_completo.toLowerCase().includes(q) ||
-          p.doador.email.toLowerCase().includes(q) ||
-          formatBloodType(p.doador.tipo_sanguineo).toLowerCase().includes(q);
-        const matchStatus = filterStatus === 'all' || p.status === filterStatus;
+          a.doador.nome_completo.toLowerCase().includes(q) ||
+          a.doador.email.toLowerCase().includes(q) ||
+          formatBloodType(a.doador.tipo_sanguineo).toLowerCase().includes(q);
+        const matchStatus =
+          filterStatus === 'all' || statusAtual === filterStatus;
         return matchSearch && matchStatus;
       }),
-    [pedidos, search, filterStatus]
+    [agendas, search, filterStatus, localStatus]
   );
 
-  const pendentes = pedidos.filter((p) => p.status === 'pendente').length;
-  const aceites = pedidos.filter((p) => p.status === 'aceite').length;
-  const rejeitados = pedidos.filter((p) => p.status === 'rejeitado').length;
+  const pendentes = agendas.filter(
+    (a) => (localStatus[a.id_agenda] ?? a.status) === 'pendente'
+  ).length;
+  const aceites = agendas.filter(
+    (a) => (localStatus[a.id_agenda] ?? a.status) === 'aceite'
+  ).length;
+  const rejeitados = agendas.filter(
+    (a) => (localStatus[a.id_agenda] ?? a.status) === 'rejeitado'
+  ).length;
 
-  const handleAnswer = (
-    id_pedido: number,
+  const handleAnswer = async (
+    id_agenda: number,
     id_doador: number,
     nome_doador: string,
     status: 'aceite' | 'rejeitado'
   ) => {
-    setLoadingId(id_pedido);
-    answerDoacao(
-      { id_pedido, id_doador, nome_doador, status },
-      {
-        onSuccess: () => {
-          showToast(
-            status === 'aceite'
-              ? 'Doação aceite com sucesso.'
-              : 'Pedido rejeitado.',
-            status === 'aceite' ? 'success' : 'error'
-          );
-          setLoadingId(null);
+    setLoadingId(id_agenda);
+    try {
+      const id_pedido = await getPedidoIdByDoador(id_doador);
+
+      answerDoacao(
+        { id_pedido, id_doador, nome_doador, status },
+        {
+          onSuccess: () => {
+            setLocalStatus((prev) => ({ ...prev, [id_agenda]: status }));
+            showToast(
+              status === 'aceite'
+                ? 'Pedido de doação aceite.'
+                : 'Pedido rejeitado.',
+              status === 'aceite' ? 'success' : 'error'
+            );
+            setLoadingId(null);
+          },
+          onError: () => {
+            showToast('Erro ao responder ao pedido.', 'error');
+            setLoadingId(null);
+          },
+        }
+      );
+
+      processAgenda(
+        {
+          id_agenda,
+          status: status === 'aceite' ? 'confirmada' : 'rejeitado',
         },
-        onError: () => {
-          showToast('Erro ao responder ao pedido.', 'error');
-          setLoadingId(null);
-        },
-      }
-    );
+        {
+          onSuccess: () => {
+            setLocalStatus((prev) => ({ ...prev, [id_agenda]: status }));
+            showToast(
+              status === 'aceite'
+                ? 'Pedido de doação aceite.'
+                : 'Pedido rejeitado.',
+              status === 'aceite' ? 'success' : 'error'
+            );
+            setLoadingId(null);
+          },
+          onError: () => {
+            showToast('Erro ao responder ao pedido.', 'error');
+            setLoadingId(null);
+          },
+        }
+      );
+    } catch {
+      showToast('Erro ao buscar pedido do doador.', 'error');
+      setLoadingId(null);
+    }
   };
 
   return (
@@ -309,7 +391,7 @@ export const DonorManagement: React.FC = () => {
         <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
           <MdPerson className="text-sm text-slate-500" />
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-            {pedidos.length} pedido{pedidos.length !== 1 ? 's' : ''}
+            {agendas.length} agendamento{agendas.length !== 1 ? 's' : ''}
           </span>
         </div>
         {pendentes > 0 && (
@@ -408,7 +490,7 @@ export const DonorManagement: React.FC = () => {
       {isError && !isLoading && (
         <div className="py-14 text-center bg-white dark:bg-slate-900 rounded-2xl border border-red-100 dark:border-red-900/30 shadow-sm">
           <p className="text-slate-900 dark:text-white font-bold text-sm">
-            Erro ao carregar pedidos
+            Erro ao carregar agendamentos
           </p>
           <p className="text-slate-400 text-xs mt-1">
             Verifica a tua ligação e tenta novamente.
@@ -421,13 +503,13 @@ export const DonorManagement: React.FC = () => {
         <div className="py-14 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
           <MdBloodtype className="text-4xl text-slate-200 dark:text-slate-700 mx-auto mb-2" />
           <p className="text-slate-900 dark:text-white font-bold text-sm">
-            {pedidos.length === 0
-              ? 'Nenhum pedido recebido ainda'
+            {agendas.length === 0
+              ? 'Nenhum agendamento recebido ainda'
               : 'Nenhum resultado encontrado'}
           </p>
           <p className="text-slate-400 text-xs font-medium mt-1">
-            {pedidos.length === 0
-              ? 'Os pedidos de doação aparecerão aqui quando forem enviados.'
+            {agendas.length === 0
+              ? 'Os agendamentos aparecerão aqui quando forem enviados.'
               : 'Tente uma pesquisa diferente.'}
           </p>
           {(search || filterStatus !== 'all') && (
@@ -448,17 +530,18 @@ export const DonorManagement: React.FC = () => {
       {/* Donor grid */}
       {!isLoading && !isError && filtered.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 pb-8">
-          {filtered.map((pedido, i) => {
-            const { doador } = pedido;
+          {filtered.map((agenda, i) => {
+            const { doador } = agenda;
             const avatarColor = AVATAR_COLORS[i % AVATAR_COLORS.length];
             const bloodType = formatBloodType(doador.tipo_sanguineo);
-            const isLoading = loadingId === pedido.id_pedido_doacao;
-            const sc = statusBadge[pedido.status];
-            const isPendente = pedido.status === 'pendente';
+            const isCardLoading = loadingId === agenda.id_agenda;
+            const statusAtual = localStatus[agenda.id_agenda] ?? agenda.status;
+            const sc = statusBadge[statusAtual];
+            const isPendente = statusAtual === 'pendente';
 
             return (
               <Card
-                key={pedido.id_pedido_doacao}
+                key={agenda.id_agenda}
                 className="border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md overflow-hidden rounded-2xl bg-white dark:bg-slate-900 transition-all duration-200 hover:-translate-y-0.5 group"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
@@ -479,7 +562,7 @@ export const DonorManagement: React.FC = () => {
                           {doador.nome_completo}
                         </h3>
                         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
-                          ID #{pedido.id_pedido_doacao}
+                          Agenda #{agenda.id_agenda}
                         </p>
                       </div>
                     </div>
@@ -504,41 +587,33 @@ export const DonorManagement: React.FC = () => {
                       <MdPhone className="text-sm text-blue-500 shrink-0" />
                       <span>{doador.telefone}</span>
                     </div>
-                    {pedido.mensagem && (
+                    {agenda.observacao_doador && (
                       <div className="flex items-start gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium bg-slate-50 dark:bg-slate-800/60 px-3 py-2 rounded-lg">
                         <MdMessage className="text-sm text-blue-500 shrink-0 mt-0.5" />
                         <span className="italic line-clamp-2">
-                          {pedido.mensagem}
+                          {agenda.observacao_doador}
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Footer: datas + status */}
+                  {/* Footer: data + status */}
                   <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                     <div>
                       <p className="text-[9px] font-bold uppercase text-slate-400 tracking-wider mb-0.5">
-                        Solicitado em
+                        Agendado para
                       </p>
                       <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
                         <MdCalendarToday className="text-slate-400 text-[10px]" />
-                        {formatDate(pedido.data_solicitacao)}
+                        {formatDate(agenda.data_agendada)}
                       </p>
                     </div>
-                    <Badge
-                      className={cn(
-                        'text-[9px] font-bold uppercase tracking-wide px-2 py-1 rounded-lg border',
-                        sc.className
-                      )}
-                    >
-                      {sc.label}
-                    </Badge>
                   </div>
 
-                  {/* Data resposta (se respondido) */}
-                  {pedido.data_resposta && !isPendente && (
+                  {/* Data atualização (se respondido) */}
+                  {!isPendente && (
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center">
-                      Respondido em {formatDate(pedido.data_resposta)}
+                      Atualizado em {formatDate(agenda.data_atualizacao)}
                     </p>
                   )}
 
@@ -548,43 +623,43 @@ export const DonorManagement: React.FC = () => {
                       <Button
                         onClick={() =>
                           handleAnswer(
-                            pedido.id_pedido_doacao,
+                            agenda.id_agenda,
                             doador.id_doador,
                             doador.nome_completo,
                             'aceite'
                           )
                         }
-                        disabled={isLoading || isAnswering}
+                        disabled={isCardLoading || isAnswering}
                         className="flex-1 h-9 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white border-0"
                       >
-                        {isLoading ? <LoadingDots /> : 'Aceitar'}
+                        {isCardLoading ? <LoadingDots /> : 'Aceitar'}
                       </Button>
                       <Button
                         variant="destructive"
                         onClick={() =>
                           handleAnswer(
-                            pedido.id_pedido_doacao,
+                            agenda.id_agenda,
                             doador.id_doador,
                             doador.nome_completo,
                             'rejeitado'
                           )
                         }
-                        disabled={isLoading || isAnswering}
+                        disabled={isCardLoading || isAnswering}
                         className="flex-1 h-9 rounded-xl text-xs font-bold"
                       >
-                        {isLoading ? <LoadingDots /> : 'Rejeitar'}
+                        {isCardLoading ? <LoadingDots /> : 'Rejeitar'}
                       </Button>
                     </div>
                   ) : (
                     <div
                       className={cn(
                         'flex items-center justify-center h-9 rounded-xl border text-xs font-bold',
-                        pedido.status === 'aceite'
+                        statusAtual === 'aceite'
                           ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-300'
                           : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-300'
                       )}
                     >
-                      {pedido.status === 'aceite'
+                      {statusAtual === 'aceite'
                         ? '✅ Doação aceite'
                         : '✕ Pedido rejeitado'}
                     </div>

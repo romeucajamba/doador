@@ -6,6 +6,13 @@ export const createAgenda = async (
   payload: CreateAgendaInput
 ): Promise<Agenda> => {
   const { data } = await api.post<Agenda>('/agenda', payload);
+
+  await api.post('/pedido/doacao', {
+    id_doador: payload.id_doador,
+    id_hospital: payload.id_hospital,
+    mensagem: payload.observacao_doador || undefined,
+  });
+
   return data;
 };
 
