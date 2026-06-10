@@ -93,6 +93,38 @@ const useProcessAgenda = (id_hospital: number | undefined) => {
   });
 };
 
+// ─── Criar histórico de doação ────────────────────────────────────────────────
+
+const useCreateHistoricoDoacao = () => {
+  return useMutation({
+    mutationFn: async (payload: {
+      id_agenda: number;
+      id_doador: number;
+      id_hospital: number;
+      data_doacao: string;
+      observacao?: string | null;
+    }) => {
+      await api.post('/agenda/historico', payload);
+    },
+    onError: (error) => {
+      console.error('Erro ao criar histórico de doação:', error);
+    },
+  });
+};
+
+// ─── Gamificação — ping de doação ─────────────────────────────────────────────
+
+const usePingDoacao = () => {
+  return useMutation({
+    mutationFn: async (id_doador: number) => {
+      await api.post(`/gamificacao/doacao/${id_doador}`);
+    },
+    onError: (error) => {
+      console.error('Erro ao registar ping de doação:', error);
+    },
+  });
+};
+
 const getPedidoIdByDoador = async (id_doador: number): Promise<number> => {
   const { data } = await api.get(`/pedido/doacao/${id_doador}`);
   const pedidos = Array.isArray(data) ? data : [data];
@@ -257,6 +289,11 @@ export const DonorManagement: React.FC = () => {
     useAnswerDoacao(id_hospital);
 
   const { mutate: processAgenda } = useProcessAgenda(id_hospital);
+
+  const { mutate: createHistorico } = useCreateHistoricoDoacao();
+
+  const { mutate: pingDoacao } = usePingDoacao();
+
   const { toast, show: showToast } = useToast();
 
   const [search, setSearch] = useState('');
@@ -318,6 +355,19 @@ export const DonorManagement: React.FC = () => {
               status === 'aceite' ? 'success' : 'error'
             );
             setLoadingId(null);
+
+            // ← só cria histórico quando aceite
+            if (status === 'aceite' && id_hospital) {
+              createHistorico({
+                id_agenda,
+                id_doador,
+                id_hospital,
+                data_doacao: new Date().toISOString(),
+                observacao: null,
+              });
+
+              pingDoacao(id_doador);
+            }
           },
           onError: () => {
             showToast('Erro ao responder ao pedido.', 'error');
