@@ -23,11 +23,9 @@ export const StockManagement = () => {
     isLoading,
     isError,
   } = useHospitalStock(id_hospital);
-  const { mutate: addStock, isPending: isAdding } = useAddStock(id_hospital);
-  const { mutate: decrementStock, isPending: isDecrementing } =
-    useDecrementStock(id_hospital);
-  const { mutate: createStock, isPending: isCreating } =
-    useCreateStock(id_hospital);
+  const { mutateAsync: addStockAsync, isPending: isAdding } = useAddStock(id_hospital);
+  const { mutateAsync: decrementStockAsync, isPending: isDecrementing } = useDecrementStock(id_hospital);
+  const { mutateAsync: createStockAsync, isPending: isCreating } = useCreateStock(id_hospital);
 
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -37,37 +35,40 @@ export const StockManagement = () => {
   const totalBolsas = stock.reduce((acc, s) => acc + s.quantidade_bolsas, 0);
   const tiposCriticos = stock.filter((s) => s.quantidade_bolsas < 5).length;
 
-  // ── Adicionar novo tipo: envia quantidade 1 com o id_stock do novo item.
-  // O teu backend de criação de tipo deve retornar o id_stock; ajusta conforme
-  // a tua rota de criação se for diferente.
-  const handleAdd = (tipo: TipoSanguineo) => {
+  const handleAdd = async (tipo: TipoSanguineo) => {
     if (!id_hospital) return;
 
     const existing = stock.find((s) => s.tipo_sanguineo === tipo);
 
-    if (existing) {
-      addStock(
-        { id_stock: existing.id_stock, quantidade: 1 },
-        { onSuccess: () => setShowAddModal(false) }
-      );
-    } else {
-      createStock(
-        { id_hospital, tipo_sanguineo: tipo, quantidade_bolsas: 1 },
-        { onSuccess: () => setShowAddModal(false) }
-      );
+    try {
+      if (existing) {
+        await addStockAsync({ id_stock: existing.id_stock, quantidade: 1 });
+      } else {
+        await createStockAsync({ id_hospital, tipo_sanguineo: tipo, quantidade_bolsas: 1 });
+      }
+      setShowAddModal(false);
+    } catch (error) {
+      console.error('Erro ao adicionar tipo de sangue:', error);
+      alert('Não foi possível adicionar o tipo de sangue. Tente novamente.');
     }
   };
 
-  const handleDecrement = (item: StockItem) => {
+  const handleDecrement = async (item: StockItem) => {
     if (item.quantidade_bolsas <= 0) return;
-    // Envia quantidade -1 via POST stock/movimento
-    decrementStock({ id_stock: item.id_stock });
+    try {
+      await decrementStockAsync({ id_stock: item.id_stock });
+    } catch (error) {
+      console.error('Erro ao remover bolsa:', error);
+    }
   };
 
-  const handleIncrement = (item: StockItem) => {
+  const handleIncrement = async (item: StockItem) => {
     if (!id_hospital) return;
-    // Envia quantidade +1 via POST stock/movimento
-    addStock({ id_stock: item.id_stock, quantidade: 1 });
+    try {
+      await addStockAsync({ id_stock: item.id_stock, quantidade: 1 });
+    } catch (error) {
+      console.error('Erro ao adicionar bolsa:', error);
+    }
   };
 
   return (

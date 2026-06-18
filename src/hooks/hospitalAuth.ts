@@ -26,6 +26,7 @@ interface HospitalAuthState {
   isAuthenticated: boolean;
 
   loginHospital: (token: string, user: HospitalUser) => void;
+  updateHospitalUser: (data: Partial<HospitalUser>) => void;
   logoutHospital: () => void;
 }
 
@@ -40,6 +41,11 @@ export const useHospitalAuthStore = create<HospitalAuthState>()(
 
       loginHospital: (token, user) =>
         set({ token, user, isAuthenticated: true }),
+
+      updateHospitalUser: (data: Partial<HospitalUser>) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...data } : null,
+        })),
 
       logoutHospital: () =>
         set({ token: null, user: null, isAuthenticated: false }),

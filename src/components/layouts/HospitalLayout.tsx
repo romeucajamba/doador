@@ -26,8 +26,8 @@ export const HospitalLayout = ({ children }: HospitalLayoutProps) => {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 sticky top-0 h-screen">
         <div className="p-6">
-          <h1 className="text-xl font-black text-hospital flex items-center gap-2">
-            <div className="size-8 bg-hospital rounded-lg flex items-center justify-center text-white">
+          <h1 className="text-xl font-black text-primary flex items-center gap-2">
+            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
               B+
             </div>
             BLOOD HUB
@@ -139,7 +139,7 @@ const SideNavItem = ({
       cn(
         'flex items-center gap-3 p-3 rounded-xl transition-all duration-200 font-semibold',
         isActive
-          ? 'bg-hospital/10 text-hospital shadow-sm'
+          ? 'bg-primary/10 text-primary shadow-sm'
           : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
       )
     }
@@ -163,7 +163,7 @@ const MobileNavItem = ({
     className={({ isActive }) =>
       cn(
         'flex flex-col items-center justify-center p-2 rounded-lg transition-colors',
-        isActive ? 'text-hospital bg-hospital/10' : 'text-slate-400'
+        isActive ? 'text-primary bg-primary/10' : 'text-slate-400'
       )
     }
   >

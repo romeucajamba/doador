@@ -16,6 +16,8 @@ import { useNotificationStore } from '@/stores/useNotificationStore';
 import { BookingModal } from './modal';
 import { useHospitals } from '@/service/hospital/hospital';
 import { Hospital } from '@/types/hospital';
+import { useAuthStore } from '@/hooks/auth';
+import { useDonorAppointments } from '@/service/donor/gender';
 
 // ── Tipos locais apenas para UI ──────────────────────────────────────────────
 type ActionState = `contact-${number}` | `book-${number}` | null;
@@ -36,11 +38,23 @@ export const HospitalList: React.FC = () => {
   const [bookedIds, setBookedIds] = useState<Set<number>>(new Set());
   const [bookingHospital, setBookingHospital] = useState<Hospital | null>(null);
 
+  const { session } = useAuthStore();
+  const user = session?.user;
+  const { data: appointments = [] } = useDonorAppointments(user?.id_doador);
+
   const { data: hospitals = [], isLoading, error } = useHospitals();
 
   const addNotification = useNotificationStore(
     (state) => state.addNotification
   );
+
+  const activeAppointments = useMemo(() => {
+    return appointments.filter((a: any) => a.status === 'pendente');
+  }, [appointments]);
+
+  const hasActiveAppointment = useCallback((hospitalId: number) => {
+    return activeAppointments.some((a: any) => a.id_hospital === hospitalId) || bookedIds.has(hospitalId);
+  }, [activeAppointments, bookedIds]);
 
   // Filtra por nome ou endereço usando os campos reais da API
   const filtered = useMemo(
@@ -182,7 +196,7 @@ export const HospitalList: React.FC = () => {
                 activeAction === `contact-${hospital.id_hospital}`
               }
               isBookLoading={activeAction === `book-${hospital.id_hospital}`}
-              isBooked={bookedIds.has(hospital.id_hospital)}
+              isBooked={hasActiveAppointment(hospital.id_hospital)}
               onContact={() => handleContact(hospital)}
               onBook={() => setBookingHospital(hospital)}
             />

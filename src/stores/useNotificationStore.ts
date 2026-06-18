@@ -13,11 +13,12 @@ export interface Notification {
 
 interface NotificationState {
   notifications: Notification[];
+  readNotificationIds: number[];
   addNotification: (
     notification: Omit<Notification, 'id' | 'read' | 'time'>
   ) => void;
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
+  markAsRead: (id: string | number) => void;
+  markAllAsRead: (backendIds?: number[]) => void;
   clearNotifications: () => void;
 }
 
@@ -61,6 +62,7 @@ export const useNotificationStore = create<NotificationState>()(
           type: 'sucesso',
         },
       ],
+      readNotificationIds: [],
       addNotification: (n) =>
         set((state) => ({
           notifications: [
@@ -74,14 +76,22 @@ export const useNotificationStore = create<NotificationState>()(
           ],
         })),
       markAsRead: (id) =>
-        set((state) => ({
-          notifications: state.notifications.map((n) =>
-            n.id === id ? { ...n, read: true } : n
-          ),
-        })),
-      markAllAsRead: () =>
+        set((state) => {
+          if (typeof id === 'number') {
+            return {
+              readNotificationIds: [...new Set([...state.readNotificationIds, id])]
+            };
+          }
+          return {
+            notifications: state.notifications.map((n) =>
+              n.id === id ? { ...n, read: true } : n
+            ),
+          };
+        }),
+      markAllAsRead: (backendIds?: number[]) =>
         set((state) => ({
           notifications: state.notifications.map((n) => ({ ...n, read: true })),
+          readNotificationIds: backendIds ? [...new Set([...state.readNotificationIds, ...backendIds])] : state.readNotificationIds,
         })),
       clearNotifications: () => set({ notifications: [] }),
     }),

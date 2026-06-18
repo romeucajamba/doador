@@ -24,6 +24,7 @@ export const useCreateAgenda = () => {
     onSuccess: () => {
       // Invalida lista de agendamentos se existir
       queryClient.invalidateQueries({ queryKey: ['agendas'] });
+      queryClient.invalidateQueries({ queryKey: ['donor-appointments'] });
     },
   });
 };

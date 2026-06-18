@@ -16,7 +16,7 @@ import { useAuthStore } from '@/hooks/auth';
 import { useDonorNotifications } from '@/service/donor/notifications';
 
 export const NotificationBell = () => {
-  const { markAsRead, markAllAsRead } = useNotificationStore();
+  const { readNotificationIds, markAsRead, markAllAsRead } = useNotificationStore();
   const [isOpen, setIsOpen] = useState(false);
 
   const { session } = useAuthStore();
@@ -24,7 +24,7 @@ export const NotificationBell = () => {
 
   const { data: notifications = [] } = useDonorNotifications(user?.id_doador);
 
-  const unreadCount = notifications.filter((n) => !n.status_envio).length;
+  const unreadCount = notifications.filter((n) => !readNotificationIds.includes(n.id_notificacao)).length;
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
@@ -45,9 +45,7 @@ export const NotificationBell = () => {
       >
         <MdNotifications className="text-2xl text-neutral-text dark:text-gray-400" />
         {unreadCount > 0 && (
-          <span className="absolute top-2 right-2 size-4 bg-primary text-white text-[10px] font-bold rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center animate-in zoom-in">
-            {unreadCount}
-          </span>
+          <span className="absolute top-2 right-2 size-2.5 bg-red-600 rounded-full border-2 border-white dark:border-slate-900 animate-in zoom-in" />
         )}
       </button>
 
@@ -65,7 +63,7 @@ export const NotificationBell = () => {
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
-                    onClick={markAllAsRead}
+                    onClick={() => markAllAsRead(notifications.map(n => n.id_notificacao))}
                     className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter"
                   >
                     Mark all as read
@@ -89,15 +87,17 @@ export const NotificationBell = () => {
                   </p>
                 </div>
               ) : (
-                notifications.map((n) => (
+                notifications.map((n) => {
+                  const isUnread = !readNotificationIds.includes(n.id_notificacao);
+                  return (
                   <div
                     key={n.id_notificacao}
                     onClick={() => {
-                      markAsRead(String(n.id_notificacao));
+                      markAsRead(n.id_notificacao);
                     }}
                     className={cn(
                       'p-4 border-b border-gray-50 dark:border-slate-800/50 flex gap-3 cursor-pointer transition-colors',
-                      !n.status_envio
+                      isUnread
                         ? 'bg-primary/5 dark:bg-primary/10'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     )}
@@ -110,12 +110,12 @@ export const NotificationBell = () => {
                         <p
                           className={cn(
                             'font-bold text-sm truncate',
-                            !n.status_envio
+                            isUnread
                               ? 'text-dark-text dark:text-white'
                               : 'text-neutral-text'
                           )}
                         ></p>
-                        {!n.status_envio && (
+                        {isUnread && (
                           <div className="size-2 bg-primary rounded-full shrink-0 mt-1.5" />
                         )}
                       </div>
@@ -124,7 +124,8 @@ export const NotificationBell = () => {
                       </p>
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

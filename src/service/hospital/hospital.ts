@@ -85,6 +85,22 @@ export const useChangeHospitalPassword = (id: number | undefined) => {
   });
 };
 
+export const useUpdateHospital = (id: number | undefined) => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: Partial<HospitalUser>): Promise<HospitalUser> => {
+      const { data } = await api.put(`/hospital/${id}`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      if (id) {
+        qc.invalidateQueries({ queryKey: ['hospital-profile', id] });
+      }
+    },
+  });
+};
+
 // ── Stocks ─────────────────────────────────────────────────────────────────────
 
 export const stockQueryKey = (id_hospital: number) =>
@@ -162,8 +178,9 @@ export const useAddStock = (id_hospital: number | undefined) => {
     }
   >({
     mutationFn: async ({ id_stock, quantidade = 1 }) => {
-      const res = await api.put(`/stock/${id_stock}`, {
-        quantidade_bolsas: quantidade,
+      const res = await api.post(`/stock/movimento`, {
+        id_stock,
+        quantidade,
       });
 
       return res.data;
@@ -191,8 +208,9 @@ export const useDecrementStock = (id_hospital: number | undefined) => {
     { id_stock: number; observacao?: string }
   >({
     mutationFn: async ({ id_stock }) => {
-      const res = await api.patch(`/stock/${id_stock}`, {
-        quantidade_bolsas: 1, // negativo → consumo
+      const res = await api.post(`/stock/movimento`, {
+        id_stock,
+        quantidade: -1, // negativo → consumo
       });
       return res.data;
     },

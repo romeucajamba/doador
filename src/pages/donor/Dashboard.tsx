@@ -37,6 +37,8 @@ export const DonorDashboard: React.FC = () => {
 
   const date = new Date();
 
+  const uniqueCentersCount = new Set(appointments.map((apt: any) => apt.id_hospital)).size;
+
   const IMPACT_STATS = [
     {
       icon: <MdBloodtype className="text-primary text-xl" />,
@@ -52,7 +54,7 @@ export const DonorDashboard: React.FC = () => {
     },
     {
       icon: <span className="text-lg leading-none">🏥</span>,
-      value: String(stats?.total_centros ?? 0),
+      value: String(uniqueCentersCount),
       label: 'Centros',
       accent: 'bg-slate-100 dark:bg-slate-800',
     },
