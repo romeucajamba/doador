@@ -37,7 +37,9 @@ export const DonorDashboard: React.FC = () => {
 
   const date = new Date();
 
-  const uniqueCentersCount = new Set(appointments.map((apt: any) => apt.id_hospital)).size;
+  const uniqueCentersCount = new Set(
+    appointments.map((apt: any) => apt.id_hospital)
+  ).size;
 
   const IMPACT_STATS = [
     {

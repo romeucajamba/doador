@@ -6,7 +6,12 @@ import { MdChat, MdPerson } from 'react-icons/md';
 export const ComunicacaoManagement = () => {
   const { data: notificacoes, isLoading } = useAdminComunicacao();
 
-  if (isLoading) return <div className="p-8 text-center font-bold animate-pulse text-slate-500">A carregar notificações...</div>;
+  if (isLoading)
+    return (
+      <div className="p-8 text-center font-bold animate-pulse text-slate-500">
+        A carregar notificações...
+      </div>
+    );
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -23,7 +28,9 @@ export const ComunicacaoManagement = () => {
         <CardHeader>
           <CardTitle className="text-xl font-black text-primary flex items-center gap-2">
             Alertas Enviados
-            <Badge variant="outline" className="ml-2 font-bold">{notificacoes?.length || 0}</Badge>
+            <Badge variant="outline" className="ml-2 font-bold">
+              {notificacoes?.length || 0}
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -39,10 +46,22 @@ export const ComunicacaoManagement = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {notificacoes?.map((n: any) => (
-                  <tr key={n.id_notificacao} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                  <tr
+                    key={n.id_notificacao}
+                    className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors"
+                  >
                     <td className="px-4 py-3">
-                      <Badge variant="outline" className={n.status_envio === 'sucesso' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}>
-                        {n.status_envio ? String(n.status_envio).toUpperCase() : 'DESCONHECIDO'}
+                      <Badge
+                        variant="outline"
+                        className={
+                          n.status_envio === 'sucesso'
+                            ? 'bg-green-100 text-green-700 border-green-200'
+                            : 'bg-red-100 text-red-700 border-red-200'
+                        }
+                      >
+                        {n.status_envio
+                          ? String(n.status_envio).toUpperCase()
+                          : 'DESCONHECIDO'}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
@@ -50,7 +69,9 @@ export const ComunicacaoManagement = () => {
                         <MdPerson className="text-slate-400" /> #{n.id_doador}
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-medium">{n.mensagem_enviada}</td>
+                    <td className="px-4 py-3 font-medium">
+                      {n.mensagem_enviada}
+                    </td>
                     <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
                       {new Date(n.data_envio).toLocaleString()}
                     </td>
@@ -58,7 +79,10 @@ export const ComunicacaoManagement = () => {
                 ))}
                 {(!notificacoes || notificacoes.length === 0) && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-slate-500 font-medium">
+                    <td
+                      colSpan={4}
+                      className="px-4 py-8 text-center text-slate-500 font-medium"
+                    >
                       Nenhuma notificação encontrada.
                     </td>
                   </tr>

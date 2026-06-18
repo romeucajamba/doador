@@ -11,7 +11,10 @@ export interface UpdateAdminPayload {
 export const useUpdateAdmin = (id: number) => {
   return useMutation({
     mutationFn: async (payload: UpdateAdminPayload) => {
-      const { data } = await api.put<AdminLoginResponse['user']>(`/admin/${id}`, payload);
+      const { data } = await api.put<AdminLoginResponse['user']>(
+        `/admin/${id}`,
+        payload
+      );
       return data;
     },
   });

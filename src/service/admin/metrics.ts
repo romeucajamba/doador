@@ -9,7 +9,7 @@ export const useMetrics = () => {
       const { data } = await api.get<any[]>('/stock');
       return data;
     },
-    retry: false
+    retry: false,
   });
 
   const pedidoQuery = useQuery({
@@ -18,7 +18,7 @@ export const useMetrics = () => {
       const { data } = await api.get<any[]>('/pedido');
       return data;
     },
-    retry: false
+    retry: false,
   });
 
   const agendaQuery = useQuery({
@@ -27,7 +27,7 @@ export const useMetrics = () => {
       const { data } = await api.get<any[]>('/agenda');
       return data;
     },
-    retry: false
+    retry: false,
   });
 
   const auditoriaQuery = useQuery({
@@ -36,7 +36,7 @@ export const useMetrics = () => {
       const { data } = await api.get<any[]>('/auditoria/log');
       return data;
     },
-    retry: false
+    retry: false,
   });
 
   const rankingQuery = useQuery({
@@ -45,7 +45,7 @@ export const useMetrics = () => {
       const { data } = await api.get<any[]>('/gamificacao/ranking/top');
       return data;
     },
-    retry: false
+    retry: false,
   });
 
   return {
@@ -54,6 +54,11 @@ export const useMetrics = () => {
     agendas: agendaQuery.data,
     logs: auditoriaQuery.data,
     ranking: rankingQuery.data,
-    isLoading: stockQuery.isLoading || pedidoQuery.isLoading || agendaQuery.isLoading || auditoriaQuery.isLoading || rankingQuery.isLoading
+    isLoading:
+      stockQuery.isLoading ||
+      pedidoQuery.isLoading ||
+      agendaQuery.isLoading ||
+      auditoriaQuery.isLoading ||
+      rankingQuery.isLoading,
   };
 };

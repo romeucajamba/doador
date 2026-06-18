@@ -92,7 +92,10 @@ export const AdminLogin = () => {
           <div className="text-center mt-6 space-y-4">
             <p className="text-sm text-slate-500">
               Não tem uma conta?{' '}
-              <Link to="/admin/register" className="font-bold text-primary hover:underline">
+              <Link
+                to="/admin/register"
+                className="font-bold text-primary hover:underline"
+              >
                 Criar Admin
               </Link>
             </p>

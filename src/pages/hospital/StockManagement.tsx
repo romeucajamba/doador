@@ -23,9 +23,12 @@ export const StockManagement = () => {
     isLoading,
     isError,
   } = useHospitalStock(id_hospital);
-  const { mutateAsync: addStockAsync, isPending: isAdding } = useAddStock(id_hospital);
-  const { mutateAsync: decrementStockAsync, isPending: isDecrementing } = useDecrementStock(id_hospital);
-  const { mutateAsync: createStockAsync, isPending: isCreating } = useCreateStock(id_hospital);
+  const { mutateAsync: addStockAsync, isPending: isAdding } =
+    useAddStock(id_hospital);
+  const { mutateAsync: decrementStockAsync, isPending: isDecrementing } =
+    useDecrementStock(id_hospital);
+  const { mutateAsync: createStockAsync, isPending: isCreating } =
+    useCreateStock(id_hospital);
 
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -44,7 +47,11 @@ export const StockManagement = () => {
       if (existing) {
         await addStockAsync({ id_stock: existing.id_stock, quantidade: 1 });
       } else {
-        await createStockAsync({ id_hospital, tipo_sanguineo: tipo, quantidade_bolsas: 1 });
+        await createStockAsync({
+          id_hospital,
+          tipo_sanguineo: tipo,
+          quantidade_bolsas: 1,
+        });
       }
       setShowAddModal(false);
     } catch (error) {

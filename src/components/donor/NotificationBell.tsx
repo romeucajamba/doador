@@ -16,7 +16,8 @@ import { useAuthStore } from '@/hooks/auth';
 import { useDonorNotifications } from '@/service/donor/notifications';
 
 export const NotificationBell = () => {
-  const { readNotificationIds, markAsRead, markAllAsRead } = useNotificationStore();
+  const { readNotificationIds, markAsRead, markAllAsRead } =
+    useNotificationStore();
   const [isOpen, setIsOpen] = useState(false);
 
   const { session } = useAuthStore();
@@ -24,7 +25,9 @@ export const NotificationBell = () => {
 
   const { data: notifications = [] } = useDonorNotifications(user?.id_doador);
 
-  const unreadCount = notifications.filter((n) => !readNotificationIds.includes(n.id_notificacao)).length;
+  const unreadCount = notifications.filter(
+    (n) => !readNotificationIds.includes(n.id_notificacao)
+  ).length;
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
@@ -63,7 +66,9 @@ export const NotificationBell = () => {
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
                   <button
-                    onClick={() => markAllAsRead(notifications.map(n => n.id_notificacao))}
+                    onClick={() =>
+                      markAllAsRead(notifications.map((n) => n.id_notificacao))
+                    }
                     className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter"
                   >
                     Mark all as read
@@ -88,42 +93,44 @@ export const NotificationBell = () => {
                 </div>
               ) : (
                 notifications.map((n) => {
-                  const isUnread = !readNotificationIds.includes(n.id_notificacao);
+                  const isUnread = !readNotificationIds.includes(
+                    n.id_notificacao
+                  );
                   return (
-                  <div
-                    key={n.id_notificacao}
-                    onClick={() => {
-                      markAsRead(n.id_notificacao);
-                    }}
-                    className={cn(
-                      'p-4 border-b border-gray-50 dark:border-slate-800/50 flex gap-3 cursor-pointer transition-colors',
-                      isUnread
-                        ? 'bg-primary/5 dark:bg-primary/10'
-                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                    )}
-                  >
-                    <div className="text-xl mt-1 shrink-0">
-                      {getIcon(n.status_envio ?? 'sucesso')}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-1">
-                        <p
-                          className={cn(
-                            'font-bold text-sm truncate',
-                            isUnread
-                              ? 'text-dark-text dark:text-white'
-                              : 'text-neutral-text'
-                          )}
-                        ></p>
-                        {isUnread && (
-                          <div className="size-2 bg-primary rounded-full shrink-0 mt-1.5" />
-                        )}
+                    <div
+                      key={n.id_notificacao}
+                      onClick={() => {
+                        markAsRead(n.id_notificacao);
+                      }}
+                      className={cn(
+                        'p-4 border-b border-gray-50 dark:border-slate-800/50 flex gap-3 cursor-pointer transition-colors',
+                        isUnread
+                          ? 'bg-primary/5 dark:bg-primary/10'
+                          : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                      )}
+                    >
+                      <div className="text-xl mt-1 shrink-0">
+                        {getIcon(n.status_envio ?? 'sucesso')}
                       </div>
-                      <p className="text-xs text-neutral-text line-clamp-2 leading-relaxed mb-1">
-                        {n.mensagem_enviada}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <p
+                            className={cn(
+                              'font-bold text-sm truncate',
+                              isUnread
+                                ? 'text-dark-text dark:text-white'
+                                : 'text-neutral-text'
+                            )}
+                          ></p>
+                          {isUnread && (
+                            <div className="size-2 bg-primary rounded-full shrink-0 mt-1.5" />
+                          )}
+                        </div>
+                        <p className="text-xs text-neutral-text line-clamp-2 leading-relaxed mb-1">
+                          {n.mensagem_enviada}
+                        </p>
+                      </div>
                     </div>
-                  </div>
                   );
                 })
               )}

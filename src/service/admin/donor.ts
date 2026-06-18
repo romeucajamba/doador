@@ -27,8 +27,16 @@ export const useAdminDonors = () => {
 export const useChangeDonorStatus = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: 'ativo' | 'inativo' | 'bloqueado' }): Promise<Donor> => {
-      const { data } = await api.patch<Donor>(`/admin/donors/${id}/status`, { status });
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: number;
+      status: 'ativo' | 'inativo' | 'bloqueado';
+    }): Promise<Donor> => {
+      const { data } = await api.patch<Donor>(`/admin/donors/${id}/status`, {
+        status,
+      });
       return data;
     },
     onSuccess: () => {

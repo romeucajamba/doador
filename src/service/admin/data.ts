@@ -7,7 +7,7 @@ export const useAdminStock = () => {
     queryFn: async () => {
       const { data } = await api.get<any[]>('/stock');
       return data;
-    }
+    },
   });
 };
 
@@ -17,7 +17,7 @@ export const useAdminPedidos = () => {
     queryFn: async () => {
       const { data } = await api.get<any[]>('/pedido');
       return data;
-    }
+    },
   });
 };
 
@@ -27,7 +27,7 @@ export const useAdminAgenda = () => {
     queryFn: async () => {
       const { data } = await api.get<any[]>('/agenda');
       return data;
-    }
+    },
   });
 };
 
@@ -37,7 +37,7 @@ export const useAdminAuditoria = () => {
     queryFn: async () => {
       const { data } = await api.get<any[]>('/auditoria/log');
       return data;
-    }
+    },
   });
 };
 
@@ -47,6 +47,6 @@ export const useAdminComunicacao = () => {
     queryFn: async () => {
       const { data } = await api.get<any[]>('/comunicacao/notificacao');
       return data;
-    }
+    },
   });
 };

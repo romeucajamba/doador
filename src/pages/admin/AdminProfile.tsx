@@ -5,7 +5,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { MdPerson, MdEmail, MdLock, MdSave, MdAdminPanelSettings } from 'react-icons/md';
+import {
+  MdPerson,
+  MdEmail,
+  MdLock,
+  MdSave,
+  MdAdminPanelSettings,
+} from 'react-icons/md';
 
 export const AdminProfile = () => {
   const { session, updateUser } = useAdminAuthStore();
@@ -16,7 +22,7 @@ export const AdminProfile = () => {
   const [nomeCompleto, setNomeCompleto] = useState(user?.nome_completo || '');
   const [email, setEmail] = useState(user?.email || '');
   const [senha, setSenha] = useState('');
-  
+
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
@@ -36,7 +42,7 @@ export const AdminProfile = () => {
       }
 
       const updatedData = await updateProfile.mutateAsync(payload);
-      
+
       updateUser({
         nome_completo: updatedData.nome_completo,
         email: updatedData.email,
@@ -46,7 +52,8 @@ export const AdminProfile = () => {
       setSenha('');
     } catch (err: any) {
       setError(
-        err.response?.data?.message || 'Erro ao atualizar perfil. Verifique os dados.'
+        err.response?.data?.message ||
+          'Erro ao atualizar perfil. Verifique os dados.'
       );
     }
   };
@@ -70,13 +77,12 @@ export const AdminProfile = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            
             {error && (
               <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-bold rounded-xl border border-red-100 dark:border-red-900/50">
                 {error}
               </div>
             )}
-            
+
             {success && (
               <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-sm font-bold rounded-xl border border-green-100 dark:border-green-900/50">
                 {success}
@@ -84,7 +90,10 @@ export const AdminProfile = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="nome_completo" className="flex items-center gap-2">
+              <Label
+                htmlFor="nome_completo"
+                className="flex items-center gap-2"
+              >
                 <MdPerson className="text-slate-400" /> Nome Completo
               </Label>
               <Input
@@ -115,7 +124,9 @@ export const AdminProfile = () => {
                 <h3 className="font-bold text-dark-text dark:text-white flex items-center gap-2">
                   <MdLock className="text-primary" /> Alterar Palavra-passe
                 </h3>
-                <p className="text-xs text-slate-500">Deixe em branco se não quiser alterar a senha atual.</p>
+                <p className="text-xs text-slate-500">
+                  Deixe em branco se não quiser alterar a senha atual.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -132,8 +143,18 @@ export const AdminProfile = () => {
             </div>
 
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-              <Button type="submit" disabled={updateProfile.isPending} className="font-black px-8">
-                {updateProfile.isPending ? 'A GUARDAR...' : <><MdSave className="mr-2 text-lg" /> GUARDAR ALTERAÇÕES</>}
+              <Button
+                type="submit"
+                disabled={updateProfile.isPending}
+                className="font-black px-8"
+              >
+                {updateProfile.isPending ? (
+                  'A GUARDAR...'
+                ) : (
+                  <>
+                    <MdSave className="mr-2 text-lg" /> GUARDAR ALTERAÇÕES
+                  </>
+                )}
               </Button>
             </div>
           </form>

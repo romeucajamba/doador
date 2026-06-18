@@ -89,7 +89,9 @@ export const useUpdateHospital = (id: number | undefined) => {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: Partial<HospitalUser>): Promise<HospitalUser> => {
+    mutationFn: async (
+      payload: Partial<HospitalUser>
+    ): Promise<HospitalUser> => {
       const { data } = await api.put(`/hospital/${id}`, payload);
       return data;
     },

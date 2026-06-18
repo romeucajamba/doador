@@ -1,6 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
 import { api } from '@/utils/axios';
-import { AdminLoginPayload, AdminLoginResponse, AdminRegisterPayload, Admin } from '@/types/admin';
+import {
+  AdminLoginPayload,
+  AdminLoginResponse,
+  AdminRegisterPayload,
+  Admin,
+} from '@/types/admin';
 
 export const useAdminLogin = () => {
   return useMutation({

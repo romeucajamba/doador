@@ -65,7 +65,7 @@ export const AdminRegister = () => {
                 className="w-full"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
               <Input
@@ -104,7 +104,10 @@ export const AdminRegister = () => {
           <div className="text-center mt-6 space-y-4">
             <p className="text-sm text-slate-500">
               Já tem uma conta de administrador?{' '}
-              <Link to="/admin/login" className="font-bold text-primary hover:underline">
+              <Link
+                to="/admin/login"
+                className="font-bold text-primary hover:underline"
+              >
                 Faça login
               </Link>
             </p>

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { 
-  MdDashboard, 
+import {
+  MdDashboard,
   MdMap,
   MdLogout,
   MdLocalHospital,
@@ -12,7 +12,7 @@ import {
   MdChat,
   MdLeaderboard,
   MdHistory,
-  MdAdminPanelSettings
+  MdAdminPanelSettings,
 } from 'react-icons/md';
 import { cn } from '@/lib/utils';
 import { useAdminAuthStore } from '@/hooks/adminAuth';
@@ -58,19 +58,45 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             label="Geografia"
           />
           <SideNavItem to="/admin/stock" icon={<MdInventory />} label="Stock" />
-          <SideNavItem to="/admin/pedidos" icon={<MdNotificationsActive />} label="Pedidos" />
-          <SideNavItem to="/admin/agenda" icon={<MdEventNote />} label="Agenda" />
-          <SideNavItem to="/admin/comunicacao" icon={<MdChat />} label="Comunicação" />
-          <SideNavItem to="/admin/gamificacao" icon={<MdLeaderboard />} label="Gamificação" />
-          <SideNavItem to="/admin/auditoria" icon={<MdHistory />} label="Auditoria" />
-          <SideNavItem to="/admin/profile" icon={<MdAdminPanelSettings />} label="Meu Perfil" />
+          <SideNavItem
+            to="/admin/pedidos"
+            icon={<MdNotificationsActive />}
+            label="Pedidos"
+          />
+          <SideNavItem
+            to="/admin/agenda"
+            icon={<MdEventNote />}
+            label="Agenda"
+          />
+          <SideNavItem
+            to="/admin/comunicacao"
+            icon={<MdChat />}
+            label="Comunicação"
+          />
+          <SideNavItem
+            to="/admin/auditoria"
+            icon={<MdHistory />}
+            label="Auditoria"
+          />
+          <SideNavItem
+            to="/admin/profile"
+            icon={<MdAdminPanelSettings />}
+            label="Meu Perfil"
+          />
         </nav>
 
         <div className="p-4 border-t border-gray-100 dark:border-slate-800 space-y-4 shrink-0">
-          <NavLink to="/admin/profile" className={({ isActive }) => cn(
-            "flex items-center gap-3 p-3 rounded-2xl transition-all",
-            isActive ? "bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30" : "bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800"
-          )}>
+          <NavLink
+            to="/admin/profile"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 p-3 rounded-2xl transition-all',
+                isActive
+                  ? 'bg-primary/10 dark:bg-primary/20 ring-1 ring-primary/30'
+                  : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+              )
+            }
+          >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-dark-text dark:text-white truncate group-hover:text-primary transition-colors">
                 {user?.nome_completo || 'Admin'}
@@ -126,18 +152,34 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
               icon={<MdPerson />}
               label="Doadores"
             />
-            <NavItem
-              to="/admin/geografia"
-              icon={<MdMap />}
-              label="Geografia"
-            />
+            <NavItem to="/admin/geografia" icon={<MdMap />} label="Geografia" />
             <NavItem to="/admin/stock" icon={<MdInventory />} label="Stock" />
-            <NavItem to="/admin/pedidos" icon={<MdNotificationsActive />} label="Pedidos" />
+            <NavItem
+              to="/admin/pedidos"
+              icon={<MdNotificationsActive />}
+              label="Pedidos"
+            />
             <NavItem to="/admin/agenda" icon={<MdEventNote />} label="Agenda" />
-            <NavItem to="/admin/comunicacao" icon={<MdChat />} label="Comunicação" />
-            <NavItem to="/admin/gamificacao" icon={<MdLeaderboard />} label="Gamificação" />
-            <NavItem to="/admin/auditoria" icon={<MdHistory />} label="Auditoria" />
-            <NavItem to="/admin/profile" icon={<MdAdminPanelSettings />} label="Perfil" />
+            <NavItem
+              to="/admin/comunicacao"
+              icon={<MdChat />}
+              label="Comunicação"
+            />
+            <NavItem
+              to="/admin/gamificacao"
+              icon={<MdLeaderboard />}
+              label="Gamificação"
+            />
+            <NavItem
+              to="/admin/auditoria"
+              icon={<MdHistory />}
+              label="Auditoria"
+            />
+            <NavItem
+              to="/admin/profile"
+              icon={<MdAdminPanelSettings />}
+              label="Perfil"
+            />
             <NavItem
               to="/admin/login"
               onClick={logout}

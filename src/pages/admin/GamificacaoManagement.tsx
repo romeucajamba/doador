@@ -10,10 +10,15 @@ export const GamificacaoManagement = () => {
     queryFn: async () => {
       const { data } = await api.get<any[]>('/gamificacao/regras');
       return data;
-    }
+    },
   });
 
-  if (isLoading) return <div className="p-8 text-center font-bold animate-pulse text-slate-500">A carregar regras...</div>;
+  if (isLoading)
+    return (
+      <div className="p-8 text-center font-bold animate-pulse text-slate-500">
+        A carregar regras...
+      </div>
+    );
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -30,7 +35,9 @@ export const GamificacaoManagement = () => {
         <CardHeader>
           <CardTitle className="text-xl font-black text-primary flex items-center gap-2">
             Regras e Níveis
-            <Badge variant="outline" className="ml-2 font-bold">{regras?.length || 0}</Badge>
+            <Badge variant="outline" className="ml-2 font-bold">
+              {regras?.length || 0}
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -45,17 +52,27 @@ export const GamificacaoManagement = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {regras?.map((r: any) => (
-                  <tr key={r.id_regra} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">#{r.id_regra}</td>
+                  <tr
+                    key={r.id_regra}
+                    className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors"
+                  >
+                    <td className="px-4 py-3 font-medium text-slate-600 dark:text-slate-300">
+                      #{r.id_regra}
+                    </td>
                     <td className="px-4 py-3 font-bold flex items-center gap-1">
                       <MdStar className="text-yellow-400" /> {r.nome}
                     </td>
-                    <td className="px-4 py-3 font-bold text-dark-text dark:text-white">{r.pontos_necessarios}</td>
+                    <td className="px-4 py-3 font-bold text-dark-text dark:text-white">
+                      {r.pontos_necessarios}
+                    </td>
                   </tr>
                 ))}
                 {(!regras || regras.length === 0) && (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-slate-500 font-medium">
+                    <td
+                      colSpan={3}
+                      className="px-4 py-8 text-center text-slate-500 font-medium"
+                    >
                       Nenhuma regra encontrada.
                     </td>
                   </tr>

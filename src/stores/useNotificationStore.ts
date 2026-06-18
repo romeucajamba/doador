@@ -79,7 +79,9 @@ export const useNotificationStore = create<NotificationState>()(
         set((state) => {
           if (typeof id === 'number') {
             return {
-              readNotificationIds: [...new Set([...state.readNotificationIds, id])]
+              readNotificationIds: [
+                ...new Set([...state.readNotificationIds, id]),
+              ],
             };
           }
           return {
@@ -91,7 +93,9 @@ export const useNotificationStore = create<NotificationState>()(
       markAllAsRead: (backendIds?: number[]) =>
         set((state) => ({
           notifications: state.notifications.map((n) => ({ ...n, read: true })),
-          readNotificationIds: backendIds ? [...new Set([...state.readNotificationIds, ...backendIds])] : state.readNotificationIds,
+          readNotificationIds: backendIds
+            ? [...new Set([...state.readNotificationIds, ...backendIds])]
+            : state.readNotificationIds,
         })),
       clearNotifications: () => set({ notifications: [] }),
     }),

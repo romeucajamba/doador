@@ -52,9 +52,15 @@ export const HospitalList: React.FC = () => {
     return appointments.filter((a: any) => a.status === 'pendente');
   }, [appointments]);
 
-  const hasActiveAppointment = useCallback((hospitalId: number) => {
-    return activeAppointments.some((a: any) => a.id_hospital === hospitalId) || bookedIds.has(hospitalId);
-  }, [activeAppointments, bookedIds]);
+  const hasActiveAppointment = useCallback(
+    (hospitalId: number) => {
+      return (
+        activeAppointments.some((a: any) => a.id_hospital === hospitalId) ||
+        bookedIds.has(hospitalId)
+      );
+    },
+    [activeAppointments, bookedIds]
+  );
 
   // Filtra por nome ou endereço usando os campos reais da API
   const filtered = useMemo(

@@ -1,18 +1,54 @@
 import { useAdminAuthStore } from '@/hooks/adminAuth';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { MdMap, MdLocalHospital, MdPerson, MdInventory, MdNotificationsActive, MdEventNote, MdHistory, MdBarChart } from 'react-icons/md';
+import {
+  MdMap,
+  MdLocalHospital,
+  MdPerson,
+  MdInventory,
+  MdNotificationsActive,
+  MdEventNote,
+  MdHistory,
+  MdBarChart,
+} from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import { useMetrics } from '@/service/admin/metrics';
 import { useAdminDonors } from '@/service/admin/donor';
 import { useAdminHospitals } from '@/service/admin/hospital';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 import { useMemo } from 'react';
 
-const COLORS = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#0ea5e9', '#6366f1', '#a855f7'];
+const COLORS = [
+  '#ef4444',
+  '#f97316',
+  '#f59e0b',
+  '#84cc16',
+  '#22c55e',
+  '#0ea5e9',
+  '#6366f1',
+  '#a855f7',
+];
 
 export const Dashboard = () => {
   const { session } = useAdminAuthStore();
-  const { stock, pedidos, agendas, logs, ranking, isLoading: loadingMetrics } = useMetrics();
+  const {
+    stock,
+    pedidos,
+    agendas,
+    logs,
+    ranking,
+    isLoading: loadingMetrics,
+  } = useMetrics();
   const { data: donors } = useAdminDonors();
   const { data: hospitals } = useAdminHospitals();
 
@@ -23,10 +59,12 @@ export const Dashboard = () => {
     if (!stock) return [];
     const counts: Record<string, number> = {};
     stock.forEach((s: any) => {
-      const tipo = s.tipo_sanguineo?.replace('_POS', '+').replace('_NEG', '-') || 'Desconhecido';
+      const tipo =
+        s.tipo_sanguineo?.replace('_POS', '+').replace('_NEG', '-') ||
+        'Desconhecido';
       counts[tipo] = (counts[tipo] || 0) + 1;
     });
-    return Object.keys(counts).map(k => ({ name: k, Quantidade: counts[k] }));
+    return Object.keys(counts).map((k) => ({ name: k, Quantidade: counts[k] }));
   }, [stock]);
 
   // 2. Pedidos por Status
@@ -37,7 +75,7 @@ export const Dashboard = () => {
       const status = p.status?.toUpperCase() || 'DESCONHECIDO';
       counts[status] = (counts[status] || 0) + 1;
     });
-    return Object.keys(counts).map(k => ({ name: k, value: counts[k] }));
+    return Object.keys(counts).map((k) => ({ name: k, value: counts[k] }));
   }, [pedidos]);
 
   // 3. Pontos dos Doadores (Top 5)
@@ -45,7 +83,7 @@ export const Dashboard = () => {
     if (!ranking) return [];
     return ranking.slice(0, 5).map((r: any) => ({
       name: r.doador?.nome_completo?.split(' ')[0] || `Doador ${r.id_doador}`,
-      Pontos: r.pontos_totais || 0
+      Pontos: r.pontos_totais || 0,
     }));
   }, [ranking]);
 
@@ -56,7 +94,8 @@ export const Dashboard = () => {
           Olá, {session?.user?.nome_completo || 'Admin'} 👋
         </h1>
         <p className="text-neutral-text font-medium text-lg">
-          Bem-vindo ao centro de controlo do Blood Hub. Visão 360º de todas as rotas ativas.
+          Bem-vindo ao centro de controlo do Blood Hub. Visão 360º de todas as
+          rotas ativas.
         </p>
       </div>
 
@@ -64,7 +103,9 @@ export const Dashboard = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-slate-100 dark:border-slate-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-bold text-slate-500">Doadores</CardTitle>
+            <CardTitle className="text-sm font-bold text-slate-500">
+              Doadores
+            </CardTitle>
             <MdPerson className="text-xl text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -74,7 +115,9 @@ export const Dashboard = () => {
 
         <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-slate-100 dark:border-slate-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-bold text-slate-500">Hospitais</CardTitle>
+            <CardTitle className="text-sm font-bold text-slate-500">
+              Hospitais
+            </CardTitle>
             <MdLocalHospital className="text-xl text-green-500" />
           </CardHeader>
           <CardContent>
@@ -84,7 +127,9 @@ export const Dashboard = () => {
 
         <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-slate-100 dark:border-slate-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-bold text-slate-500">Stock (Lotes)</CardTitle>
+            <CardTitle className="text-sm font-bold text-slate-500">
+              Stock (Lotes)
+            </CardTitle>
             <MdInventory className="text-xl text-red-500" />
           </CardHeader>
           <CardContent>
@@ -94,7 +139,9 @@ export const Dashboard = () => {
 
         <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-slate-100 dark:border-slate-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-bold text-slate-500">Pedidos Urgentes</CardTitle>
+            <CardTitle className="text-sm font-bold text-slate-500">
+              Pedidos Urgentes
+            </CardTitle>
             <MdNotificationsActive className="text-xl text-orange-500" />
           </CardHeader>
           <CardContent>
@@ -104,21 +151,52 @@ export const Dashboard = () => {
       </div>
 
       {/* CHARTS ROW */}
-      <h2 className="text-2xl font-black pt-4 flex items-center gap-2"><MdBarChart className="text-primary"/> Análise Visual</h2>
+      <h2 className="text-2xl font-black pt-4 flex items-center gap-2">
+        <MdBarChart className="text-primary" /> Análise Visual
+      </h2>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* GRAFICO STOCK */}
         <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-slate-100 dark:border-slate-800">
           <CardHeader>
-            <CardTitle className="text-sm font-bold text-slate-500">Doações / Stock por Tipo Sanguíneo</CardTitle>
+            <CardTitle className="text-sm font-bold text-slate-500">
+              Doações / Stock por Tipo Sanguíneo
+            </CardTitle>
           </CardHeader>
           <CardContent className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stockData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                <RechartsTooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                <Bar dataKey="Quantidade" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              <BarChart
+                data={stockData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#e2e8f0"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                />
+                <RechartsTooltip
+                  cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                  contentStyle={{
+                    borderRadius: '12px',
+                    border: 'none',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                />
+                <Bar
+                  dataKey="Quantidade"
+                  fill="#ef4444"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -127,17 +205,36 @@ export const Dashboard = () => {
         {/* GRAFICO PEDIDOS */}
         <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-slate-100 dark:border-slate-800">
           <CardHeader>
-            <CardTitle className="text-sm font-bold text-slate-500">Status dos Pedidos</CardTitle>
+            <CardTitle className="text-sm font-bold text-slate-500">
+              Status dos Pedidos
+            </CardTitle>
           </CardHeader>
           <CardContent className="h-[250px] w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pedidosData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                <Pie
+                  data={pedidosData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
                   {pedidosData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
-                <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <RechartsTooltip
+                  contentStyle={{
+                    borderRadius: '12px',
+                    border: 'none',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -146,15 +243,44 @@ export const Dashboard = () => {
         {/* GRAFICO PONTOS */}
         <Card className="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-slate-100 dark:border-slate-800">
           <CardHeader>
-            <CardTitle className="text-sm font-bold text-slate-500">Top 5 Doadores (Pontos)</CardTitle>
+            <CardTitle className="text-sm font-bold text-slate-500">
+              Top 5 Doadores (Pontos)
+            </CardTitle>
           </CardHeader>
           <CardContent className="h-[250px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={rankingData} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} width={80} />
-                <RechartsTooltip cursor={{ fill: 'rgba(0,0,0,0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+              <BarChart
+                data={rankingData}
+                layout="vertical"
+                margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={false}
+                  stroke="#e2e8f0"
+                />
+                <XAxis
+                  type="number"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                  width={80}
+                />
+                <RechartsTooltip
+                  cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                  contentStyle={{
+                    borderRadius: '12px',
+                    border: 'none',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  }}
+                />
                 <Bar dataKey="Pontos" fill="#eab308" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -184,7 +310,7 @@ export const Dashboard = () => {
             </CardContent>
           </Card>
         </Link>
-        
+
         <Link to="/admin/doadores" className="group">
           <Card className="h-full transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 dark:hover:border-primary/30 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
